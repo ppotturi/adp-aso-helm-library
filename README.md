@@ -52,6 +52,16 @@ All the K8s object templates in the library require the following values to be s
 ```
 name: <string>
 namespace: <string>
+
+tags:
+  Environment: <string>
+  ServiceCode: <string>
+  ServiceName: <string>
+  ServiceType: <string> (Shared or Dedicated)
+  Purpose: <string>
+  kubernetes_cluster: <string>
+  kubernetes_namespace: <string>
+  kubernetes_label_ServiceCode: <string>
 ```
 
 ## Update below resource documentation later 

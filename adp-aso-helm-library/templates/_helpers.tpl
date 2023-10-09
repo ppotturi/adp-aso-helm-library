@@ -13,7 +13,7 @@ Common Tags for Azure resources
 Environment: {{ required (printf $requiredMsg "Environment") .Values.tags.Environment | quote }}
 ServiceCode: {{ required (printf $requiredMsg "ServiceCode") .Values.tags.ServiceCode | quote }}
 ServiceName: {{ required (printf $requiredMsg "ServiceName") .Values.tags.ServiceName | quote }}
-ServiceType: {{ .Values.ServiceType | default "Dedicated" }}
+ServiceType: {{ .Values.tags.ServiceType | default "Dedicated" }}
 Purpose: {{ required (printf $requiredMsg "Purpose") .Values.tags.Purpose | quote }}
 ManagedBy: AzureServiceOperator
 Restriction: AUTOMATED CHANGES ONLY
