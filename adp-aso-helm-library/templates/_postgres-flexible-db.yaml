@@ -1,0 +1,26 @@
+{{- define "adp-aso-helm-library.postgres-flexible-db.tpl" -}}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
+apiVersion: dbforpostgresql.azure.com/v1api20220120preview
+kind: FlexibleServersDatabase
+metadata:
+  {{ $serverName := required (printf $requiredMsg "postgres.server") .Values.postgres.server }}
+  {{ $dbName := required (printf $requiredMsg "postgres.db.name") .Values.postgres.db.name }}
+  name: {{ printf "%s-%s" $serverName $dbName }}
+  namespace: {{ .Values.namespace }}
+  {{ with .Values.asoAnnotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+spec:
+  azureName: {{ .Values.postgres.db.name }}
+  charset: {{ .Values.postgres.db.charset }}
+  collation: {{ .Values.postgres.db.collation }}
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgres.resourceGroup .Values.postgres.server }}
+  tags:
+  {{ include "adp-aso-helm-library.tags" . | nindent 4}}
+{{- end }}
+
+{{- define "adp-aso-helm-library.postgres-flexible-db" }}
+{{- include "adp-aso-helm-library.util.merge" (append . "adp-aso-helm-library.postgres-flexible-db.tpl") -}}
+{{ end -}}
