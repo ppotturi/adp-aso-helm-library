@@ -90,7 +90,7 @@ A template defining the default message to print when checking for a required va
 ### Tags
 
 * Template name: `adp-aso-helm-library.tags`
-* Usage: `{{- include "adp-aso-helm-library.tags" $ | nindent 4 }}` (`$`is mapped to the root scope)
+* Usage: `{{- include "adp-aso-helm-library.tags" $ | nindent 4 }}` (`$` is mapped to the root scope)
 
 Common tags to apply to `tags` of all ASO resource objects on the ADP K8s platform. This template relies on the globally required values [listed above](#all-template-required-values).
 

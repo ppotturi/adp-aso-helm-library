@@ -18,6 +18,6 @@ Purpose: {{ required (printf $requiredMsg "tags.Purpose") .Values.tags.Purpose |
 ManagedBy: AzureServiceOperator
 Restriction: AUTOMATED CHANGES ONLY
 kubernetes_cluster: {{ required (printf $requiredMsg "tags.kubernetes_cluster") .Values.tags.kubernetes_cluster | quote }}
-kubernetes_namespace: {{ required (printf $requiredMsg "tags.kubernetes_namespace") .Values.tags.kubernetes_namespace | quote }}
+kubernetes_namespace: {{ required (printf $requiredMsg "tags.kubernetes_namespace") .Values.namespace | quote }}
 kubernetes_label_ServiceCode: {{ required (printf $requiredMsg "tags.kubernetes_label_ServiceCode") .Values.tags.kubernetes_label_ServiceCode | quote }}
 {{- end -}}
