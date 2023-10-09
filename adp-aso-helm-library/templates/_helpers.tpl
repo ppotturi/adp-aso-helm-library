@@ -19,5 +19,5 @@ ManagedBy: AzureServiceOperator
 Restriction: AUTOMATED CHANGES ONLY
 kubernetes_cluster: {{ required (printf $requiredMsg "tags.kubernetes_cluster") .Values.tags.kubernetes_cluster | quote }}
 kubernetes_namespace: {{ required (printf $requiredMsg "tags.kubernetes_namespace") .Values.namespace | quote }}
-kubernetes_label_ServiceCode: {{ required (printf $requiredMsg "tags.kubernetes_label_ServiceCode") .Values.tags.kubernetes_label_ServiceCode | quote }}
+kubernetes_label_ServiceCode: {{ required (printf $requiredMsg "tags.kubernetes_label_ServiceCode") .Values.tags.ServiceCode | quote }}
 {{- end -}}
