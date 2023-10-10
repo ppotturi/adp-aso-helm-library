@@ -94,12 +94,12 @@ A basic usage of this object template would involve the creation of `templates/p
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values):
 ```
 postgres:
-  resourceGroup: postgres-rsg
-  server: server
+  resourceGroup: <string> 
+  server: <string> 
   db:
-    name: db
-    charset: UTF8
-    collation: en_US.utf8
+    name: <string> 
+    charset: <string>  
+    collation: <string> 
 ```
 
 ### Storage
