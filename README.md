@@ -62,6 +62,10 @@ tags:
   kubernetes_cluster: <string>
   kubernetes_namespace: <string>
   kubernetes_label_ServiceCode: <string>
+
+subscriptionId: subscription-x
+asoAnnotations:
+  serviceoperator.azure.com/reconcile-policy: detach-on-delete
 ```
 
 ## Update below resource documentation later 
@@ -89,8 +93,6 @@ A basic usage of this object template would involve the creation of `templates/p
 
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values):
 ```
-subscriptionId: subscription-x
-namespace: app
 postgres:
   resourceGroup: postgres-rsg
   server: server
@@ -98,8 +100,6 @@ postgres:
     name: db
     charset: UTF8
     collation: en_US.utf8
-asoAnnotations:
-  serviceoperator.azure.com/reconcile-policy: detach-on-delete
 ```
 
 ### Storage
