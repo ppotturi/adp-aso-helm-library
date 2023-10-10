@@ -76,7 +76,7 @@ tags:
 
 An ASO `FlexibleServersDatabase` object.
 
-A basic usage of this object template would involve the creation of `templates/postgres-flexible-db.yaml` in the parent Helm chart (e.g. `ffc-microservice`) containing:
+A basic usage of this object template would involve the creation of `templates/postgres-flexible-db.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
 
 ```
 {{- include "adp-aso-helm-library.postgres-flexible-db" (list . "adp-microservice.service") -}}
