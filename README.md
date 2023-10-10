@@ -64,10 +64,54 @@ tags:
   kubernetes_label_ServiceCode: <string>
 ```
 
-## Update below resource documentation later 
-
 ### NameSpaceQueue
-    In Progress
+
+* Template file: `_namespacesqueue.yaml`
+* Template name: `adp-aso-helm-library.namespacesqueue`
+
+An ASO `namespacesqueue` object to create a Microsoft.ServiceBus/namespaces/queues resource.
+
+A basic usage of this object template would involve the creation of `templates/namespacesqueue.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.namespacesqueue" . -}}
+
+```
+
+#### Required values
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+
+Note that `namespaceQueues` is array of objects which is used to create more that one queue.
+
+```
+serviceBusResourceGroupName: <string>
+serviceBusNamespaceName: <string>
+namespaceQueues:      
+  - name: <string>    
+  - name: <string>
+```
+
+#### Optional values
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for servicebus queues:
+
+```
+namespaceQueues:
+  - name: <string>
+    deadLetteringOnMessageExpiration: <bool>           --Default false
+    defaultMessageTimeToLive: <string>                 --Default P14D
+    duplicateDetectionHistoryTimeWindow: <string>      --Default PT10M
+    enableBatchedOperations: <bool>                    --Default true
+    enableExpress: <bool>                              --Default false
+    enablePartitioning: <bool>                         --Default false
+    lockDuration: <string>                             --Default PT1M
+    maxDeliveryCount: <int>                            --Default 10
+    maxMessageSizeInKilobytes: <int>                   --Default 1024
+    maxSizeInMegabytes: <int>                          --Default 1024
+    requiresDuplicateDetection: <bool>                 --Default false
+    requiresSession: <bool>                            --Default false
+```
 
 ### PostgresDatabase
     In Progress
