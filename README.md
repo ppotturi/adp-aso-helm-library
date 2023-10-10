@@ -69,8 +69,38 @@ tags:
 ### NameSpaceQueue
     In Progress
 
-### PostgresDatabase
-    In Progress
+### Database for Postgres Flexible server template
+
+* Template file: `_postgres-flexible-db.yaml`
+* Template name: `adp-aso-helm-library.postgres-flexible-db`
+
+An ASO `FlexibleServersDatabase` object.
+
+A basic usage of this object template would involve the creation of `templates/postgres-flexible-db.yaml` in the parent Helm chart (e.g. `ffc-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.postgres-flexible-db" (list . "adp-microservice.service") -}}
+{{- define "adp-microservice.postgres-flexible-db" -}}
+# Microservice specific configuration in here
+{{- end -}}
+```
+
+#### Required values
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values):
+```
+subscriptionId: subscription-x
+namespace: app
+postgres:
+  resourceGroup: postgres-rsg
+  server: server
+  db:
+    name: db
+    charset: UTF8
+    collation: en_US.utf8
+asoAnnotations:
+  serviceoperator.azure.com/reconcile-policy: detach-on-delete
+```
 
 ### Storage
     In Progress
