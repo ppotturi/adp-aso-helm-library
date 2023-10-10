@@ -62,6 +62,10 @@ tags:
   kubernetes_cluster: <string>
   kubernetes_namespace: <string>
   kubernetes_label_ServiceCode: <string>
+
+subscriptionId: subscription-x
+asoAnnotations:
+  serviceoperator.azure.com/reconcile-policy: detach-on-delete
 ```
 
 ### Environment specific Default values 
