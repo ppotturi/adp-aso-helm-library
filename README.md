@@ -64,6 +64,20 @@ tags:
   kubernetes_label_ServiceCode: <string>
 ```
 
+### Environment specific Default values 
+
+Below values are set in flux repositories and all ASO resources will use these values internally. 
+
+for e.g. NameSpaceQueues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
+
+```
+subscriptionId: <string>                  --subscription Id
+serviceBusResourceGroupName: <string>     --Name of the service bus resource group
+serviceBusNamespaceName: <string>         --Name of the service bus 
+postgresResourceGroupName: <string>       --Name of the Postgres server resource group
+postgresServerName: <string>              --Name of the postgres server
+```
+
 ### NameSpaceQueue
 
 * Template file: `_namespacesqueue.yaml`
@@ -82,11 +96,9 @@ A basic usage of this object template would involve the creation of `templates/n
 
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
-Note that `namespaceQueues` is array of objects which is used to create more that one queue.
+Note that `namespaceQueues` is array of objects which can be used to create more that one queue.
 
 ```
-serviceBusResourceGroupName: <string>
-serviceBusNamespaceName: <string>
 namespaceQueues:      
   - name: <string>    
   - name: <string>
