@@ -3,7 +3,7 @@
 apiVersion: dbforpostgresql.azure.com/v1api20220120preview
 kind: FlexibleServersDatabase
 metadata:
-  {{ $serverName := required (printf $requiredMsg "postgres.server") .Values.postgres.server }}
+  {{ $serverName := required (printf $requiredMsg "postgresServerName") .Values.postgresServerName }}
   {{ $dbName := required (printf $requiredMsg "postgres.db.name") .Values.postgres.db.name }}
   name: {{ printf "%s-%s" $serverName $dbName }}
   namespace: {{ .Values.namespace }}
@@ -15,8 +15,8 @@ spec:
   azureName: {{ .Values.postgres.db.name }}
   charset: {{ .Values.postgres.db.charset }}
   collation: {{ .Values.postgres.db.collation }}
-  owner:
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgres.resourceGroup .Values.postgres.server }}
+  owner:m
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgresresourceGroupName .Values.postgresServerName }}
   tags:
   {{ include "adp-aso-helm-library.tags" . | nindent 4}}
 {{- end }}
