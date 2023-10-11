@@ -1,4 +1,4 @@
-{{- define "adp-aso-helm-library.namespacesqueue" -}}
+{{- define "adp-aso-helm-library.namespace-queue" -}}
 {{- range $namespaceQueue := .Values.namespaceQueues }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
 apiVersion: servicebus.azure.com/v1api20211101

@@ -39,7 +39,7 @@ The ASO Helm library chart has been configured using the conventions described i
 The general strategy for using one of the library templates in the parent microservice Helm chart is to create a template for the K8s object formateted as so:
 
 ```
-{{- include "adp-aso-helm-library.namespacesqueue" (list . "adp-microservice.namespacesqueue") -}}
+{{- include "adp-aso-helm-library.namespace-queue" (list . "adp-microservice.namespacesqueue") -}}
 {{- define "adp-microservice.namespacesqueue" -}}
 # Microservice specific configuration in here
 {{- end -}}
@@ -68,7 +68,7 @@ tags:
 
 Below values are set in flux repositories and all ASO resources will use these values internally. 
 
-for e.g. NameSpaceQueues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
+for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
 
 ```
 subscriptionId: <string>                  --subscription Id
@@ -78,17 +78,17 @@ postgresResourceGroupName: <string>       --Name of the Postgres server resource
 postgresServerName: <string>              --Name of the postgres server
 ```
 
-### NameSpaceQueue
+### NameSpace Queue
 
-* Template file: `_namespacesqueue.yaml`
-* Template name: `adp-aso-helm-library.namespacesqueue`
+* Template file: `_namespace-queue.yaml`
+* Template name: `adp-aso-helm-library.namespace-queue`
 
 An ASO `namespacesqueue` object to create a Microsoft.ServiceBus/namespaces/queues resource.
 
-A basic usage of this object template would involve the creation of `templates/namespacesqueue.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+A basic usage of this object template would involve the creation of `templates/namespace-queue.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
 
 ```
-{{- include "adp-aso-helm-library.namespacesqueue" . -}}
+{{- include "adp-aso-helm-library.namespace-queue" . -}}
 
 ```
 
