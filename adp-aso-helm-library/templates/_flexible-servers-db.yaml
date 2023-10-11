@@ -1,4 +1,4 @@
-{{- define "adp-aso-helm-library.postgres-flexible-db.tpl" -}}
+{{- define "adp-aso-helm-library.flexible-servers-db.tpl" -}}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
 apiVersion: dbforpostgresql.azure.com/v1api20220120preview
 kind: FlexibleServersDatabase
@@ -16,11 +16,11 @@ spec:
   charset: {{ .Values.postgres.db.charset }}
   collation: {{ .Values.postgres.db.collation }}
   owner:m
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgresresourceGroupName .Values.postgresServerName }}
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgresResourceGroupName .Values.postgresServerName }}
   tags:
   {{ include "adp-aso-helm-library.tags" . | nindent 4}}
 {{- end }}
 
-{{- define "adp-aso-helm-library.postgres-flexible-db" }}
-{{- include "adp-aso-helm-library.util.merge" (append . "adp-aso-helm-library.postgres-flexible-db.tpl") -}}
+{{- define "adp-aso-helm-library.flexible-servers-db" }}
+{{- include "adp-aso-helm-library.util.merge" (append . "adp-aso-helm-library.flexible-servers-db.tpl") -}}
 {{ end -}}
