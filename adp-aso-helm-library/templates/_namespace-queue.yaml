@@ -3,15 +3,17 @@
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
 apiVersion: servicebus.azure.com/v1api20211101
 kind: NamespacesQueue
+{{- $queueNamePrefix := required (printf $requiredMsg "namespace") $.Values.namespace }}
+{{- $queueNameSuffix := required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name }}
 metadata:
-  name: {{ required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name | quote }}
+  name: {{ $queueNamePrefix }}-{{ $queueNameSuffix }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
     {{- toYaml . | nindent 4 }}
   {{- end }}  
 spec:
-  azureName: {{ required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name | quote }}
+  azureName: {{ $queueNamePrefix }}-{{ $queueNameSuffix }}
   deadLetteringOnMessageExpiration: {{ $namespaceQueue.deadLetteringOnMessageExpiration | default false }}
   defaultMessageTimeToLive: {{ $namespaceQueue.defaultMessageTimeToLive | default "P14D" | quote }} 
   duplicateDetectionHistoryTimeWindow: {{ $namespaceQueue.duplicateDetectionHistoryTimeWindow | default "PT10M" | quote }}  
@@ -29,8 +31,6 @@ spec:
   {{- $serviceBusNamespaceName := required (printf $requiredMsg "serviceBusNamespaceName") $.Values.serviceBusNamespaceName }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s" $subscriptionId $serviceBusResourceGroupName $serviceBusNamespaceName }} 
-  tags:
-    {{- include "adp-aso-helm-library.tags" $ | nindent 4 }}
 ---  
 {{- end }}
 {{- end }}
