@@ -98,9 +98,12 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 
 Note that `namespaceQueues` is array of objects which can be used to create more that one queue.
 
+Please note that the queue name is prefixed with the `namespace` internally. 
+For example, if the namespace name is "adp-demo" and you have provided the queue name as "queue1," then in the service bus, it creates a queue with the "adp-demo-queue1" name.
+
 ```
 namespaceQueues:      
-  - name: <string>    
+  - name: <string>     
   - name: <string>
 ```
 
