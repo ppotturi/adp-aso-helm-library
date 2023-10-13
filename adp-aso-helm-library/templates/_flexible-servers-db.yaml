@@ -5,20 +5,19 @@ kind: FlexibleServersDatabase
 metadata:
   {{ $serverName := required (printf $requiredMsg "postgresServerName") .Values.postgresServerName }}
   {{ $dbName := required (printf $requiredMsg "postgres.db.name") .Values.postgres.db.name }}
-  name: {{ printf "%s-%s" $serverName $dbName }}
-  namespace: {{ .Values.namespace }}
+  {{ $namespace := required (printf $requiredMsg "namespace") .Values.namespace }}
+  name: {{ printf "%s-%s-%s" $serverName $namespace $dbName }}
+  namespace: {{ $namespace }}
   {{ with .Values.asoAnnotations }}
   annotations:
     {{ toYaml . | nindent 4 }}
   {{ end }}
 spec:
-  azureName: {{ .Values.postgres.db.name }}
+  azureName: {{ printf "%s-%s" $namespace $dbName }}
   charset: {{ .Values.postgres.db.charset }}
   collation: {{ .Values.postgres.db.collation }}
-  owner:m
+  owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgresResourceGroupName .Values.postgresServerName }}
-  tags:
-  {{ include "adp-aso-helm-library.tags" . | nindent 4}}
 {{- end }}
 
 {{- define "adp-aso-helm-library.flexible-servers-db" }}

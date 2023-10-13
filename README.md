@@ -136,7 +136,7 @@ namespaceQueues:
 
 An ASO `FlexibleServersDatabase` object.
 
-A basic usage of this object template would involve the creation of `templates/postgres-flexible-db.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+A basic usage of this object template would involve the creation of `templates/flexible-servers-db.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
 
 ```
 {{- include "adp-aso-helm-library.flexible-servers-db" (list . "adp-microservice.service") -}}
@@ -155,6 +155,7 @@ postgres:
     charset: <string>  
     collation: <string> 
 ```
+Please note that the postgres DB name is prefixed with `namespace` internally. For example, if the namespace name is "adp-microservice" and you have provided the DB name as "demo-db," then in the postgres server, it creates a database with the name "adp-microservice-demo-db".
 
 ### Storage
     In Progress
