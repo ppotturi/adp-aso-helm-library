@@ -1,0 +1,36 @@
+{{- define "adp-aso-helm-library.namespace-queue" -}}
+{{- range $namespaceQueue := .Values.namespaceQueues }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
+apiVersion: servicebus.azure.com/v1api20211101
+kind: NamespacesQueue
+{{- $queueNamePrefix := required (printf $requiredMsg "namespace") $.Values.namespace }}
+{{- $queueNameSuffix := required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name }}
+metadata:
+  name: {{ $queueNamePrefix }}-{{ $queueNameSuffix }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
+  {{- with $.Values.asoAnnotations }}
+  annotations: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}  
+spec:
+  azureName: {{ $queueNamePrefix }}-{{ $queueNameSuffix }}
+  deadLetteringOnMessageExpiration: {{ $namespaceQueue.deadLetteringOnMessageExpiration | default false }}
+  defaultMessageTimeToLive: {{ $namespaceQueue.defaultMessageTimeToLive | default "P14D" | quote }} 
+  duplicateDetectionHistoryTimeWindow: {{ $namespaceQueue.duplicateDetectionHistoryTimeWindow | default "PT10M" | quote }}  
+  enableBatchedOperations: {{ $namespaceQueue.enableBatchedOperations | default true }}
+  enableExpress: {{ $namespaceQueue.enableExpress | default false }}
+  enablePartitioning: {{ $namespaceQueue.enablePartitioning | default false }}
+  lockDuration: {{ $namespaceQueue.lockDuration | default "PT1M" | quote }} 
+  maxDeliveryCount: {{ $namespaceQueue.maxDeliveryCount | default 10 }} 
+  maxMessageSizeInKilobytes: {{ $namespaceQueue.maxMessageSizeInKilobytes | default 1024 }} 
+  maxSizeInMegabytes: {{ $namespaceQueue.maxSizeInMegabytes | default 1024 }} 
+  requiresDuplicateDetection: {{ $namespaceQueue.requiresDuplicateDetection | default false }}
+  requiresSession: {{ $namespaceQueue.requiresSession | default false }}
+  {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }}
+  {{- $serviceBusResourceGroupName := required (printf $requiredMsg "serviceBusResourceGroupName") $.Values.serviceBusResourceGroupName }}
+  {{- $serviceBusNamespaceName := required (printf $requiredMsg "serviceBusNamespaceName") $.Values.serviceBusNamespaceName }}
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s" $subscriptionId $serviceBusResourceGroupName $serviceBusNamespaceName }} 
+---  
+{{- end }}
+{{- end }}
