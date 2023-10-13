@@ -1,6 +1,6 @@
 {{- define "adp-aso-helm-library.flexible-servers-db.tpl" -}}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
-apiVersion: dbforpostgresql.azure.com/v1api20220120preview
+apiVersion: dbforpostgresql.azure.com/v1api20210601
 kind: FlexibleServersDatabase
 metadata:
   {{ $serverName := required (printf $requiredMsg "postgresServerName") .Values.postgresServerName }}
