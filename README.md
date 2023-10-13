@@ -128,8 +128,33 @@ namespaceQueues:
     requiresSession: <bool>                            --Default false
 ```
 
-### PostgresDatabase
-    In Progress
+### Database for Postgres Flexible server template
+
+* Template file: `_flexible-servers-db.yaml`
+* Template name: `adp-aso-helm-library.flexible-servers-db`
+
+An ASO `FlexibleServersDatabase` object.
+
+A basic usage of this object template would involve the creation of `templates/flexible-servers-db.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.flexible-servers-db" (list . "adp-microservice.service") -}}
+{{- define "adp-microservice.postgres-flexible-db" -}}
+# Microservice specific configuration in here
+{{- end -}}
+```
+
+#### Required values
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values):
+```
+postgres:
+  db:
+    name: <string> 
+    charset: <string>  
+    collation: <string> 
+```
+Please note that the postgres DB name is prefixed with `namespace` internally. For example, if the namespace name is "adp-microservice" and you have provided the DB name as "demo-db," then in the postgres server, it creates a database with the name "adp-microservice-demo-db".
 
 ### Storage
     In Progress
@@ -156,8 +181,16 @@ Common tags to apply to `tags` of all ASO resource objects on the ADP K8s platfo
 ### Labels 
     In Progress
 
-### Annotation 
-    In Progress
+### Annotations 
+
+For the Azure Service Operator to not delete the resources created in Azure on the deletion of the kubernetes resource manifest files, the below section can be added to `Values.yaml` in the parent helm chart. 
+
+This specifies the reconcile policy to be used and can be set to `manage`, `skip` or `detach-on-delete`. More info over [here](https://azure.github.io/azure-service-operator/guide/annotations/).
+
+```
+asoAnnotations:
+  serviceoperator.azure.com/reconcile-policy: detach-on-delete
+```
 
 ## Licence
 
