@@ -39,7 +39,7 @@ The ASO Helm library chart has been configured using the conventions described i
 The general strategy for using one of the library templates in the parent microservice Helm chart is to create a template for the K8s object formateted as so:
 
 ```
-{{- include "adp-aso-helm-library.namespacesqueue" (list . "adp-microservice.namespacesqueue") -}}
+{{- include "adp-aso-helm-library.namespace-queue" (list . "adp-microservice.namespacesqueue") -}}
 {{- define "adp-microservice.namespacesqueue" -}}
 # Microservice specific configuration in here
 {{- end -}}
@@ -64,10 +64,69 @@ tags:
   kubernetes_label_ServiceCode: <string>
 ```
 
-## Update below resource documentation later 
+### Environment specific Default values 
 
-### NameSpaceQueue
-    In Progress
+Below values are set in flux repositories and all ASO resources will use these values internally. 
+
+for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
+
+```
+subscriptionId: <string>                  --subscription Id
+serviceBusResourceGroupName: <string>     --Name of the service bus resource group
+serviceBusNamespaceName: <string>         --Name of the service bus 
+postgresResourceGroupName: <string>       --Name of the Postgres server resource group
+postgresServerName: <string>              --Name of the postgres server
+```
+
+### NameSpace Queue
+
+* Template file: `_namespace-queue.yaml`
+* Template name: `adp-aso-helm-library.namespace-queue`
+
+An ASO `namespacesqueue` object to create a Microsoft.ServiceBus/namespaces/queues resource.
+
+A basic usage of this object template would involve the creation of `templates/namespace-queue.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.namespace-queue" . -}}
+
+```
+
+#### Required values
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+
+Note that `namespaceQueues` is array of objects which can be used to create more that one queue.
+
+Please note that the queue name is prefixed with the `namespace` internally. 
+For example, if the namespace name is "adp-demo" and you have provided the queue name as "queue1," then in the service bus, it creates a queue with the "adp-demo-queue1" name.
+
+```
+namespaceQueues:      
+  - name: <string>     
+  - name: <string>
+```
+
+#### Optional values
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for servicebus queues:
+
+```
+namespaceQueues:
+  - name: <string>
+    deadLetteringOnMessageExpiration: <bool>           --Default false
+    defaultMessageTimeToLive: <string>                 --Default P14D
+    duplicateDetectionHistoryTimeWindow: <string>      --Default PT10M
+    enableBatchedOperations: <bool>                    --Default true
+    enableExpress: <bool>                              --Default false
+    enablePartitioning: <bool>                         --Default false
+    lockDuration: <string>                             --Default PT1M
+    maxDeliveryCount: <int>                            --Default 10
+    maxMessageSizeInKilobytes: <int>                   --Default 1024
+    maxSizeInMegabytes: <int>                          --Default 1024
+    requiresDuplicateDetection: <bool>                 --Default false
+    requiresSession: <bool>                            --Default false
+```
 
 ### PostgresDatabase
     In Progress
