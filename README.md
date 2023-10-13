@@ -62,10 +62,6 @@ tags:
   kubernetes_cluster: <string>
   kubernetes_namespace: <string>
   kubernetes_label_ServiceCode: <string>
-
-subscriptionId: subscription-x
-asoAnnotations:
-  serviceoperator.azure.com/reconcile-policy: detach-on-delete
 ```
 
 ### Environment specific Default values 
@@ -182,8 +178,16 @@ Common tags to apply to `tags` of all ASO resource objects on the ADP K8s platfo
 ### Labels 
     In Progress
 
-### Annotation 
-    In Progress
+### Annotations 
+
+For the Azure Service Operator to not delete the resources created in Azure on the deletion of the kubernetes resource manifest files, the below section can be added to `Values.yaml` in the parent helm chart. 
+
+This specifies the reconcile policy to be used and can be set to `manage`, `skip` or `detach-on-delete`. More info over [here](https://azure.github.io/azure-service-operator/guide/annotations/).
+
+```
+asoAnnotations:
+  serviceoperator.azure.com/reconcile-policy: detach-on-delete
+```
 
 ## Licence
 
