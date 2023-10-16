@@ -1,3 +1,10 @@
+{{- /*
+adp-aso-helm-library.namespace-topic-subscription-rule creates 'namespaces/topics/subscriptions/rules' resource
+This takes an array of three values:
+- the top context to access root values of values.yaml
+- topicSubscription object to access topicSubscription properties for e.g. topicSubscription name and topicSubscriptionRules
+- namespaceTopicName: name of the namespace topic
+*/ -}}
 {{- define "adp-aso-helm-library.namespace-topic-subscription-rule" -}}
 {{- $ := index . 0 }}
 {{- $topicSubscriptionObj := index . 1 }}

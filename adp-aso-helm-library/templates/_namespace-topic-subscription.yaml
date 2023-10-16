@@ -1,3 +1,9 @@
+{{- /*
+adp-aso-helm-library.namespace-topic-subscription creates 'namespaces/topics/subscriptions' resource
+This takes an array of two values:
+- the top context to access root values of values.yaml
+- namespaceTopic object to access namespaceTopic properties for e.g. topic name and topicSubscriptions
+*/ -}}
 {{- define "adp-aso-helm-library.namespace-topic-subscription" -}}
 {{- $ := index . 0 }}
 {{- $namespaceTopicObj := index . 1 }}
