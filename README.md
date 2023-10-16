@@ -280,6 +280,47 @@ postgres:
 ```
 Please note that the postgres DB name is prefixed with `namespace` internally. For example, if the namespace name is "adp-microservice" and you have provided the DB name as "demo-db," then in the postgres server, it creates a database with the name "adp-microservice-demo-db".
 
+### UserAssignedIdentity
+
+* Template file: `_userassignedidentity.yaml`
+* Template name: `adp-aso-helm-library.userassignedidentity`
+
+An ASO `UserAssignedIdentity` object to create a Microsoft.ManagedIdentity/userAssignedIdentities resource.
+
+A basic usage of this object template would involve the creation of `templates/userassignedidentity.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.userassignedidentity" (list . "adp-microservice.userassignedidentity") -}}
+{{- define "adp-microservice.userassignedidentity" -}}
+{{- end -}}
+
+```
+
+#### Required values
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+
+Please note that the UserAssignedIdentity name is prefixed with the `managedIdPrefix` internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions. For e.g. In SND1 it's value is set to 'sndadpinfmid1401'.
+
+
+For example, if the UserAssignedIdentity name is "demo-collector-role" then, it creates a UserAssignedIdentity with the "sndadpinfmid1401-demo-collector-role" name.
+
+```
+userAssignedIdentity:      
+  managedIdName: <string>
+
+```
+
+#### Optional values
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for servicebus queues:
+
+```
+userAssignedIdentity:      
+  location: <string>
+
+```
+
 ### Storage
     In Progress
 

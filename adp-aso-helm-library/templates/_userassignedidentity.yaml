@@ -1,0 +1,39 @@
+{{- define "adp-aso-helm-library.userassignedidentity.tpl" -}}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
+apiVersion: managedidentity.azure.com/v1api20181130
+kind: UserAssignedIdentity
+metadata:
+  {{- $managedIdPrefix := (required (printf $requiredMsg "managedIdPrefix") .Values.managedIdPrefix) | lower }}
+  {{- $managedIdSuffix := (required (printf $requiredMsg "userAssignedIdentity.managedIdName") .Values.userAssignedIdentity.managedIdName) | lower }}
+  {{- $managedIdName :=  printf "%s-%s" $managedIdPrefix $managedIdSuffix }}
+  {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
+  {{- $teamRGNamePrefix := (required (printf $requiredMsg "teamRGName") .Values.teamRGName) | lower }}
+  {{- $teamRGName := (printf "%s-%s" $teamRGNamePrefix .Values.namespace) | lower }}
+  name: {{ $managedIdName }}
+  namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
+  {{ with .Values.asoAnnotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+spec:
+  azureName: {{ $managedIdName }}
+  location: {{ .Values.userAssignedIdentity.location | default "uksouth" | quote }}
+  operatorSpec:
+    configMaps:
+      principalId:
+        name: {{ $managedIdConfigMapName }} 
+        key: principalId
+      clientId:
+        name: {{ $managedIdConfigMapName }} 
+        key: clientId   
+      tenantId:
+        name: {{ $managedIdConfigMapName }} 
+        key: tenantId    
+  {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }}
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
+{{- end }}
+
+{{- define "adp-aso-helm-library.userassignedidentity" }}
+{{- include "adp-aso-helm-library.util.merge" (append . "adp-aso-helm-library.userassignedidentity.tpl") -}}
+{{ end -}}
