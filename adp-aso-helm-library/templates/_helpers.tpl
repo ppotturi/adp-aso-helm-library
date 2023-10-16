@@ -9,7 +9,7 @@ A default message string to be used when checking for a required value
 Common Tags for Azure resources
 */}}
 {{- define "adp-aso-helm-library.tags" -}}
-{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 Environment: {{ required (printf $requiredMsg "tags.Environment") .Values.tags.Environment | quote }}
 ServiceCode: {{ required (printf $requiredMsg "tags.ServiceCode") .Values.tags.ServiceCode | quote }}
 ServiceName: {{ required (printf $requiredMsg "tags.ServiceName") .Values.tags.ServiceName | quote }}

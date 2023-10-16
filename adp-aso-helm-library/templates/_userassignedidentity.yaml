@@ -29,6 +29,8 @@ spec:
       tenantId:
         name: {{ $managedIdConfigMapName }} 
         key: tenantId    
+  tags: 
+  {{- include "adp-aso-helm-library.tags" . | indent  4 }}      
   {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
