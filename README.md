@@ -83,7 +83,7 @@ postgresServerName: <string>              --Name of the postgres server
 * Template file: `_namespace-queue.yaml`
 * Template name: `adp-aso-helm-library.namespace-queue`
 
-An ASO `namespacesqueue` object to create a Microsoft.ServiceBus/namespaces/queues resource.
+An ASO `NamespacesQueue` object to create a Microsoft.ServiceBus/namespaces/queues resource.
 
 A basic usage of this object template would involve the creation of `templates/namespace-queue.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
 
@@ -96,7 +96,7 @@ A basic usage of this object template would involve the creation of `templates/n
 
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
-Note that `namespaceQueues` is array of objects which can be used to create more that one queue.
+Note that `namespaceQueues` is an array of objects that can be used to create more than one queue.
 
 Please note that the queue name is prefixed with the `namespace` internally. 
 For example, if the namespace name is "adp-demo" and you have provided the queue name as "queue1," then in the service bus, it creates a queue with the "adp-demo-queue1" name.
@@ -127,6 +127,130 @@ namespaceQueues:
     requiresDuplicateDetection: <bool>                 --Default false
     requiresSession: <bool>                            --Default false
 ```
+
+### NameSpace Topic
+
+* Template file: `_namespace-topic.yaml`
+* Template name: `adp-aso-helm-library.namespace-topic`
+
+An ASO `NamespacesTopic` object to create a Microsoft.ServiceBus/namespaces/topics resource.
+
+A basic usage of this object template would involve the creation of `templates/namespace-topic.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.namespace-topic" . -}}
+
+```
+
+#### Required values
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+
+Note that `namespaceTopics` is an array of objects that can be used to create more than one topic.
+
+Please note that the topic name is prefixed with the `namespace` internally. 
+For example, if the namespace name is "adp-demo" and you have provided the topic name as "topic1," then in the service bus, it creates a topic with the "adp-demo-topic1" name.
+
+```
+namespaceTopics:          <Array of Object>
+  - name: <string>     
+  - name: <string>
+```
+
+#### Optional values
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for `namespaceTopics`:
+
+```
+namespaceTopics:
+  - name: <string>
+    defaultMessageTimeToLive: <string>                 --Default P14D
+    duplicateDetectionHistoryTimeWindow: <string>      --Default PT10M
+    enableBatchedOperations: <bool>                    --Default true
+    enableExpress: <bool>                              --Default false
+    enablePartitioning: <bool>                         --Default false
+    maxMessageSizeInKilobytes: <int>                   --Default 1024
+    maxSizeInMegabytes: <int>                          --Default 1024
+    requiresDuplicateDetection: <bool>                 --Default false
+    supportOrdering: <bool>                            --Default true
+```
+
+This template also optionally allows you to create `Topic Subscriptions` and `Topic Subscriptions Rules` for a given topic by providing Subscriptions and SubscriptionRules properties in the topic object.
+
+Below are the minimum values that is required to set in the parent chart's `values.yaml` to creates `NamespacesTopic`, `NamespacesTopicsSubscription` and `NamespacesTopicsSubscriptionsRule`
+
+```
+namespaceTopics:      
+  - name: <string>     
+    topicSubscriptions:                     <Array of Object>  refer "Optional values for `topicSubscriptions`" section for topicSubscriptions optional properties
+      - name: <string>
+        topicSubscriptionRules:             <Array of Object>  refer "Optional values for `topicSubscriptionRules`" section for topicSubscriptionRules properties
+        - name: <string>                    
+          filterType: <string>              Accepted values : 'CorrelationFilter' or 'SqlFilter'
+          correlationFilter: <Object>       refer "Optional values for `topicSubscriptionRules`" section for correlationFilter properties
+          sqlFilter: <Object>               refer "Optional values for `topicSubscriptionRules`" section for sqlFilter properties
+
+```
+
+For e.g. The below example will create one topic, one subscription, and two subscription rules.
+
+```
+
+namespaceTopics:
+- name: demo-topic-01
+  topicSubscriptions:
+    - name: demo-topic-subscription-01
+      topicSubscriptionRules:
+        - name: demo-topic-subscription-rule-01
+          filterType: SqlFilter
+          sqlFilter:
+            sqlExpression: "3=3"   
+        - name: demo-topic-subscription-rule-02
+          filterType: CorrelationFilter
+          sqlFilter:
+            contentType: "testvalue"             
+                    
+```
+
+#### Optional values for `topicSubscriptions`
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for `topicSubscriptions`:
+
+```
+topicSubscriptions:
+  - name: <string>
+    deadLetteringOnFilterEvaluationExceptions: <bool>       --Default false
+    deadLetteringOnMessageExpiration: <bool>                --Default false
+    defaultMessageTimeToLive: <string>                      --Default P14D
+    duplicateDetectionHistoryTimeWindow: <string>           --Default P10M
+    enableBatchedOperations: <bool>                         --Default true
+    forwardTo: <string>                                                 
+    isClientAffine: <bool>                                  --Default false
+    lockDuration: <string>                                  --Default PT1M
+    maxDeliveryCount: <int>                                 --Default 10
+    requiresSession: <bool>                                 --Default false
+```
+
+#### Optional values for `topicSubscriptionRules`
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for `topicSubscriptionRules`:
+
+```
+topicSubscriptionRules:
+  - name: <string>
+    correlationFilter:
+      contentType: <string>
+      correlationId: <string>
+      label: <string>
+      messageId: <string>
+      replyTo: <string>                                     
+      replyToSessionId: <string>
+      sessionId: <string> 
+      to: <string> 
+    sqlFilter:
+      sqlExpression: <string>  
+```
+
 
 ### Database for Postgres Flexible server template
 
