@@ -1,5 +1,5 @@
-{{- define "adp-aso-helm-library.userassignedidentity.tpl" -}}
-{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
+{{- define "adp-aso-helm-library.userassignedidentity" -}}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 apiVersion: managedidentity.azure.com/v1api20181130
 kind: UserAssignedIdentity
 metadata:
@@ -11,10 +11,10 @@ metadata:
   {{- $teamRGName := (printf "%s-%s" $teamRGNamePrefix .Values.namespace) | lower }}
   name: {{ $managedIdName }}
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
-  {{ with .Values.asoAnnotations }}
+  {{- with .Values.asoAnnotations }}
   annotations:
     {{ toYaml . | nindent 4 }}
-  {{ end }}
+  {{- end }}
 spec:
   azureName: {{ $managedIdName }}
   location: {{ .Values.userAssignedIdentity.location | default "uksouth" | quote }}
@@ -34,8 +34,12 @@ spec:
   {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
+--- 
+{{- if .Values.userAssignedIdentity.federatedCred }}    
+{{- include "adp-aso-helm-library.federated-credential" $ }}   
+{{- end }} 
+---
+{{- if .Values.userAssignedIdentity.roleAssignments }}    
+{{- include "adp-aso-helm-library.role-assignment" $ }}   
+{{- end }}     
 {{- end }}
-
-{{- define "adp-aso-helm-library.userassignedidentity" }}
-{{- include "adp-aso-helm-library.util.merge" (append . "adp-aso-helm-library.userassignedidentity.tpl") -}}
-{{ end -}}

@@ -1,0 +1,29 @@
+{{- define "adp-aso-helm-library.role-assignment" -}}
+{{- range $roleAssignment := $.Values.userAssignedIdentity.roleAssignments }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . -}}
+apiVersion: authorization.azure.com/v1api20200801preview
+kind: RoleAssignment
+metadata:
+  {{- $managedIdPrefix := (required (printf $requiredMsg "managedIdPrefix") $.Values.managedIdPrefix) | lower }}
+  {{- $managedIdSuffix := (required (printf $requiredMsg "userAssignedIdentity.managedIdName") $.Values.userAssignedIdentity.managedIdName) | lower }}
+  {{- $managedIdName :=  printf "%s-%s" $managedIdPrefix $managedIdSuffix }}
+  {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
+  {{- $roleAssignmentName := printf "%s-%s-%s" $managedIdName $roleAssignment.name "rbac" }}
+  name: {{ $roleAssignmentName }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace }}
+  {{- with $.Values.asoAnnotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  principalIdFromConfig:
+    name: {{ $managedIdConfigMapName }} 
+    key: principalId   
+  {{- $roleDefinitionId := required (printf $requiredMsg "roleAssignment.roleDefinitionId") $roleAssignment.roleDefinitionId }}
+  roleDefinitionReference:   
+    armId: {{ printf "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/roleDefinitions/%s" $roleDefinitionId }} 
+  owner:
+    armId: {{ required (printf $requiredMsg "roleAssignment.scope") $roleAssignment.scope }}
+---  
+{{- end }}    
+{{- end }}
