@@ -21,6 +21,11 @@ resources:
       endpoint: DEFRA
       type: github
       ref: gg/250126-GitPublish-template
+    - repository: ADPHelmRepository
+      name: 'defra-adp-sandpit/adp-aso-helm-repository'
+      endpoint: 'defra-adp-sandpit'
+      type: github
+      ref: gg/asorepo    
 
 extends:
   template: /pipelines/common-helm-library-publish.yaml@DEFRA-ADPPipelineCommon
