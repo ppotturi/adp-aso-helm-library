@@ -1,5 +1,7 @@
 {{- define "adp-aso-helm-library.namespace-topic" -}}
 {{- range $namespaceTopic := .Values.namespaceTopics }}
+{{- $owner := $namespaceTopic.owner | default "yes" }}
+{{- if eq $owner "yes" }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 apiVersion: servicebus.azure.com/v1api20211101
 kind: NamespacesTopic
@@ -29,6 +31,7 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s" $subscriptionId $serviceBusResourceGroupName $serviceBusNamespaceName }} 
 ---  
+{{- end }}
 {{- if $namespaceTopic.topicSubscriptions }}    
 {{- include "adp-aso-helm-library.namespace-topic-subscription" (list $ .) }}   
 {{- end }} 

@@ -164,6 +164,7 @@ The following values can optionally be set in the parent chart's `values.yaml` t
 ```
 namespaceTopics:
   - name: <string>
+    owner: <string>                                    --Default true
     defaultMessageTimeToLive: <string>                 --Default P14D
     duplicateDetectionHistoryTimeWindow: <string>      --Default PT10M
     enableBatchedOperations: <bool>                    --Default true
@@ -210,6 +211,17 @@ namespaceTopics:
           sqlFilter:
             contentType: "testvalue"             
                     
+```
+To create `topicSubscriptions` inside already existing topics, set the property `owner` to `no`. By default `owner` is set to `yes` which creates the topic name defined in values.
+
+Below example creates only the topicSubscriptions inside the existing topic named demo-topic-01.
+
+```
+namespaceTopics:
+- name: demo-topic-01
+  owner: "no"
+  topicSubscriptions:
+    - name: demo-topic-subscription-01
 ```
 
 #### Optional values for `topicSubscriptions`
