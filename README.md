@@ -178,7 +178,7 @@ namespaceTopics:
 
 This template also optionally allows you to create `Topic Subscriptions` and `Topic Subscriptions Rules` for a given topic by providing Subscriptions and SubscriptionRules properties in the topic object.
 
-Below are the minimum values that is required to set in the parent chart's `values.yaml` to creates `NamespacesTopic`, `NamespacesTopicsSubscription` and `NamespacesTopicsSubscriptionsRule`
+Below are the minimum values that is required to set in the parent chart's `values.yaml` to create a `NamespacesTopic`, `NamespacesTopicsSubscription` and `NamespacesTopicsSubscriptionsRule`
 
 ```
 namespaceTopics:      
@@ -302,9 +302,7 @@ An ASO `UserAssignedIdentity` object to create a Microsoft.ManagedIdentity/userA
 A basic usage of this object template would involve the creation of `templates/userassignedidentity.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
 
 ```
-{{- include "adp-aso-helm-library.userassignedidentity" (list . "adp-microservice.userassignedidentity") -}}
-{{- define "adp-microservice.userassignedidentity" -}}
-{{- end -}}
+{{- include "adp-aso-helm-library.userassignedidentity" . -}}
 
 ```
 
@@ -312,8 +310,7 @@ A basic usage of this object template would involve the creation of `templates/u
 
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
-Please note that the UserAssignedIdentity name is prefixed with the `managedIdPrefix` internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions. For e.g. In SND1 it's value is set to 'sndadpinfmid1401'.
-
+Please note that the UserAssignedIdentity name is prefixed with the `managedIdPrefix` internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions. For e.g. In SND1 it's value is set to 'sndadpinfmid1401'. Apart from that, this template also uses `Cluster_OIDC` and `teamRGName` variables internally to process this template.  
 
 For example, if the UserAssignedIdentity name is "demo-collector-role" then, it creates a UserAssignedIdentity with the "sndadpinfmid1401-demo-collector-role" name.
 
@@ -331,6 +328,42 @@ The following values can optionally be set in the parent chart's `values.yaml` t
 userAssignedIdentity:      
   location: <string>
 
+```
+
+This template also optionally allows you to create `Role Assignments` and `Federated credentials` for a given User Assigned Identity by providing `roleAssignments` and `federatedCreds` properties in the userAssignedIdentity object.
+
+Below are the minimum values that is required to set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
+
+```
+userAssignedIdentity:      
+  - managedIdName: <string>     
+    roleAssignments:                     <Array of Object> 
+      - name: <string>                   <Name. for e.g Queue-Reader>
+        scope: <string>                  <Target resource. It should be fully qualified ARM Id of the resource>
+        roleDefinitionId: <string>       <The role definition ID.>
+    federatedCreds:                      <Array of Object> 
+      - namespace: <string>                    
+        serviceAccountName: <string>     
+
+```
+
+For e.g. The below example will create one userAssignedIdentity, two role assignments, and one federated credential.
+
+```
+
+userAssignedIdentity:
+  managedIdName: demo-role
+  roleAssignments:  
+    - name: QueueDataReceiver
+      scope: '/subscriptions/<subscriptionID>/resourceGroups/<resourceGroupName>/providers/Microsoft.ServiceBus/namespaces/<serviceBusNameSpaceName>/queues/ffc-demo-claim'
+      roleDefinitionId: 4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0
+    - name: QueueDataSender
+      scope: '/subscriptions/<subscriptionID>/resourceGroups/<resourceGroupName>/providers/Microsoft.ServiceBus/namespaces/<serviceBusNameSpaceName>/queues/ffc-demo-payment'
+      roleDefinitionId: 69a216fc-b8fb-44d8-bc22-1f3c2cd27a39
+  federatedCreds: 
+    - namespace: ffc-demo
+      serviceAccountName: ffc-demo    
+                    
 ```
 
 ### Storage
