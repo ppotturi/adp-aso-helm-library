@@ -389,7 +389,7 @@ A template defining the default message to print when checking for a required va
 Common tags to apply to `tags` of all ASO resource objects on the ADP K8s platform. This template relies on the globally required values [listed above](#all-template-required-values).
 
 ### Labels 
-    In Progress
+    In Progress.
 
 ### Annotations 
 
