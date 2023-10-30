@@ -178,7 +178,7 @@ namespaceTopics:
 
 This template also optionally allows you to create `Topic Subscriptions` and `Topic Subscriptions Rules` for a given topic by providing Subscriptions and SubscriptionRules properties in the topic object.
 
-Below are the minimum values that is required to set in the parent chart's `values.yaml` to create a `NamespacesTopic`, `NamespacesTopicsSubscription` and `NamespacesTopicsSubscriptionsRule`
+Below are the minimum values that are required to be set in the parent chart's `values.yaml` to create a `NamespacesTopic`, `NamespacesTopicsSubscription` and `NamespacesTopicsSubscriptionsRule`
 
 ```
 namespaceTopics:      
@@ -332,7 +332,7 @@ userAssignedIdentity:
 
 This template also optionally allows you to create `Role Assignments` and `Federated credentials` for a given User Assigned Identity by providing `roleAssignments` and `federatedCreds` properties in the userAssignedIdentity object.
 
-Below are the minimum values that is required to set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
+Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
 
 ```
 userAssignedIdentity:      
