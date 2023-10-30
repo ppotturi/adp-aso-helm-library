@@ -13,7 +13,7 @@ metadata:
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
   {{- with .Values.asoAnnotations }}
   annotations:
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   azureName: {{ $managedIdName }}
@@ -34,12 +34,14 @@ spec:
   {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
+
+{{- if .Values.userAssignedIdentity.federatedCreds }}    
 --- 
-{{- if .Values.userAssignedIdentity.federatedCred }}    
 {{- include "adp-aso-helm-library.federated-credential" $ }}   
 {{- end }} 
----
+
 {{- if .Values.userAssignedIdentity.roleAssignments }}    
+---
 {{- include "adp-aso-helm-library.role-assignment" $ }}   
 {{- end }}     
 {{- end }}
