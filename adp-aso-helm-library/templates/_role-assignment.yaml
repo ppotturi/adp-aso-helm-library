@@ -4,9 +4,7 @@
 apiVersion: authorization.azure.com/v1api20200801preview
 kind: RoleAssignment
 metadata:
-  {{- $managedIdPrefix := (required (printf $requiredMsg "managedIdPrefix") $.Values.managedIdPrefix) | lower }}
-  {{- $managedIdSuffix := (required (printf $requiredMsg "userAssignedIdentity.managedIdName") $.Values.userAssignedIdentity.managedIdName) | lower }}
-  {{- $managedIdName :=  printf "%s-%s" $managedIdPrefix $managedIdSuffix }}
+  {{- $managedIdName := required (printf $requiredMsg "userAssignedIdentity.managedIdName") $.Values.userAssignedIdentity.managedIdName }}
   {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
   {{- $roleAssignmentName := printf "%s-%s-%s" $managedIdName $roleAssignment.name "rbac" }}
   name: {{ $roleAssignmentName }}

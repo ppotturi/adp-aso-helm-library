@@ -310,7 +310,9 @@ A basic usage of this object template would involve the creation of `templates/u
 
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
-Please note that the UserAssignedIdentity name is prefixed with the `managedIdPrefix` internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions. For e.g. In SND1 it's value is set to 'sndadpinfmid1401'. Apart from that, this template also uses `Cluster_OIDC` and `teamRGName` variables internally to process this template.  
+Please note that the managedIdName name set internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions "{TEAM_MI_PREFIX}-{SERVICE_NAME}". For e.g. In SND1 the `TEAM_MI_PREFIX` value is set to 'sndadpinfmid1401' and `SERVICE_NAME` value set to 'adp-demo-service', the `managedIdName` value will be : sndadpinfmid1401-adp-demo-service .
+
+Apart from that, this template also uses `clusterOIDCIssuerUrl` and `teamResourceGroupName` variables internally to process this template.  
 
 For example, if the UserAssignedIdentity name is "demo-collector-role" then, it creates a UserAssignedIdentity with the "sndadpinfmid1401-demo-collector-role" name.
 

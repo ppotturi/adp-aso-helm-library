@@ -3,12 +3,9 @@
 apiVersion: managedidentity.azure.com/v1api20181130
 kind: UserAssignedIdentity
 metadata:
-  {{- $managedIdPrefix := (required (printf $requiredMsg "managedIdPrefix") .Values.managedIdPrefix) | lower }}
-  {{- $managedIdSuffix := (required (printf $requiredMsg "userAssignedIdentity.managedIdName") .Values.userAssignedIdentity.managedIdName) | lower }}
-  {{- $managedIdName :=  printf "%s-%s" $managedIdPrefix $managedIdSuffix }}
+  {{- $managedIdName := required (printf $requiredMsg "userAssignedIdentity.managedIdName") .Values.userAssignedIdentity.managedIdName }}
   {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
-  {{- $teamRGNamePrefix := (required (printf $requiredMsg "teamRGName") .Values.teamRGName) | lower }}
-  {{- $teamRGName := (printf "%s-%s" $teamRGNamePrefix .Values.namespace) | lower }}
+  {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
   name: {{ $managedIdName }}
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
   {{- with .Values.asoAnnotations }}
