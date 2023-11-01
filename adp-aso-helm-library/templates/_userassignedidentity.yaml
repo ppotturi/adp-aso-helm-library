@@ -5,7 +5,7 @@ kind: UserAssignedIdentity
 metadata:
   {{- $managedIdName := (required (printf $requiredMsg "userAssignedIdentity.managedIdName") .Values.userAssignedIdentity.managedIdName) | lower }}
   {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
-  {{- $teamRGName := (required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName) | lower }}
+  {{- $teamRGName := .Values.teamResourceGroupName }}
   name: {{ $managedIdName }}
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
   {{- with .Values.asoAnnotations }}

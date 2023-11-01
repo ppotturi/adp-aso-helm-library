@@ -312,7 +312,7 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 
 Please note that the managedIdName name set internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions "{TEAM_MI_PREFIX}-{SERVICE_NAME}". For e.g. In SND1 the `TEAM_MI_PREFIX` value is set to 'sndadpinfmid1401' and `SERVICE_NAME` value set to 'adp-demo-service', the `managedIdName` value will be : sndadpinfmid1401-adp-demo-service .
 
-Apart from that, this template also uses `clusterOIDCIssuerUrl` and `teamRGName` variables internally to process this template.  
+Apart from that, this template also uses `clusterOIDCIssuerUrl` and `teamResourceGroupName` variables internally to process this template.  
 
 For example, if the UserAssignedIdentity name is "demo-collector-role" then, it creates a UserAssignedIdentity with the "sndadpinfmid1401-demo-collector-role" name.
 
