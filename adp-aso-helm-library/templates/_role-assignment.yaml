@@ -6,7 +6,7 @@ kind: RoleAssignment
 metadata:
   {{- $managedIdName := required (printf $requiredMsg "userAssignedIdentity.managedIdName") $.Values.userAssignedIdentity.managedIdName }}
   {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
-  {{- $roleAssignmentName := printf "%s-%s-%s" $managedIdName $roleAssignment.name "rbac" }}
+  {{- $roleAssignmentName := (printf "%s-%s-%s" $managedIdName $roleAssignment.name "rbac") | lower  }}
   name: {{ $roleAssignmentName }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace }}
   {{- with $.Values.asoAnnotations }}
