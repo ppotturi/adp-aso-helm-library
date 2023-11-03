@@ -7,11 +7,7 @@ metadata:
   {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
   {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
   name: {{ $managedIdName }}
-  {{- if .Values.fluxConfigNamespace }}
-  namespace: {{ .Values.fluxConfigNamespace }}
-  {{- else }}
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
-  {{- end }}
   {{- with .Values.asoAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
