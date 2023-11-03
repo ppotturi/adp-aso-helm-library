@@ -57,7 +57,7 @@ spec:
   {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }}
   {{- $serviceBusResourceGroupName := required (printf $requiredMsg "serviceBusResourceGroupName") $.Values.serviceBusResourceGroupName }}
   {{- $serviceBusNamespaceName := required (printf $requiredMsg "serviceBusNamespaceName") $.Values.serviceBusNamespaceName }}
-  {{- $serviceBusTopicName := (printf "%s-%s" $.Values.namespace $namespaceTopicName) | lower }}
+  {{- $serviceBusTopicName := include "resource.fullname" (list $ $namespaceTopicName) }}
   {{- $serviceBusTopicSubscriptionName := $topicSubscriptionObj.name | lower }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/topics/%s/subscriptions/%s" $subscriptionId $serviceBusResourceGroupName $serviceBusNamespaceName $serviceBusTopicName $serviceBusTopicSubscriptionName }}                     
