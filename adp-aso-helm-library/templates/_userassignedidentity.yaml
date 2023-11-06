@@ -4,7 +4,7 @@ apiVersion: managedidentity.azure.com/v1api20181130
 kind: UserAssignedIdentity
 metadata:
   {{- $managedIdName := required (printf $requiredMsg "userAssignedIdentity.managedIdName") .Values.userAssignedIdentity.managedIdName | lower }}
-  {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
+  {{- $managedIdConfigMapName :=  include "managedidentity.configMapName" . }}
   {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
   name: {{ $managedIdName }}
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}

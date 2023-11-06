@@ -5,7 +5,7 @@ apiVersion: authorization.azure.com/v1api20200801preview
 kind: RoleAssignment
 metadata:
   {{- $managedIdName := required (printf $requiredMsg "userAssignedIdentity.managedIdName") $.Values.userAssignedIdentity.managedIdName }}
-  {{- $managedIdConfigMapName :=  printf "%s-mi-identity-settings" $managedIdName }}
+  {{- $managedIdConfigMapName :=  include "managedidentity.configMapName" $ }}
   {{- $roleAssignmentName := (printf "%s-%s-%s" $managedIdName $roleAssignment.name "rbac") | lower  }}
   name: {{ $roleAssignmentName }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace }}
