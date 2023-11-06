@@ -39,7 +39,10 @@ resource FullName
 managedidentity Name. Each service will have one managedidentity and it follows standard naming convention which is derived in adp-flux-services
 */}}
 {{- define "managedidentity.name" -}}
-{{- printf "%s-%s" $.Values.teamMIPrefix $.Values.serviceName }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $teamMIPrefix := (required (printf $requiredMsg "teamMIPrefix") $.Values.teamMIPrefix) }}
+{{- $serviceName := (required (printf $requiredMsg "serviceName") $.Values.serviceName) }}
+{{- (printf "%s-%s" $teamMIPrefix $serviceName) | lower }}
 {{- end }}
 
 {{/*
