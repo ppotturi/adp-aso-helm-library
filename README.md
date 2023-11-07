@@ -10,7 +10,7 @@ In your microservice Helm chart:
   * Issue the following commands to add the repo that contains the library chart, update the repo, then update dependencies in your Helm chart:
 
 ```
-helm repo add adp https://raw.githubusercontent.com/defra/adp-aso-helm-repository/main/
+helm repo add adp https://raw.githubusercontent.com/defra/adp-helm-repository/main/adp-aso-helm-library
 helm repo update
 helm dependency update <helm_chart_location>
 ```
@@ -25,7 +25,7 @@ version: 1.0.0
 dependencies:
 - name: adp-aso-helm-library
   version: ^1.0.0
-  repository: https://raw.githubusercontent.com/defra/adp-aso-helm-repository/master/
+  repository: https://raw.githubusercontent.com/defra/adp-helm-repository/main/adp-aso-helm-library
 ```
 
 NOTE: We will use ACR where ASO Helm Library Chart can be published. So above dependencies will be changed to import library from ACR (In Progress).
@@ -39,10 +39,8 @@ The ASO Helm library chart has been configured using the conventions described i
 The general strategy for using one of the library templates in the parent microservice Helm chart is to create a template for the K8s object formateted as so:
 
 ```
-{{- include "adp-aso-helm-library.namespace-queue" (list . "adp-microservice.namespacesqueue") -}}
-{{- define "adp-microservice.namespacesqueue" -}}
-# Microservice specific configuration in here
-{{- end -}}
+{{- include "adp-aso-helm-library.namespace-queue" . -}}
+
 ```
 
 ### All template required values
@@ -66,7 +64,7 @@ tags:
 
 ### Environment specific Default values 
 
-Below values are set in flux repositories and all ASO resources will use these values internally. 
+The below values are used by the aso templates internally, and their values are set using `platform variables` in `adp-flux-services` repositories.
 
 for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
 
@@ -76,6 +74,9 @@ serviceBusResourceGroupName: <string>     --Name of the service bus resource gro
 serviceBusNamespaceName: <string>         --Name of the service bus 
 postgresResourceGroupName: <string>       --Name of the Postgres server resource group
 postgresServerName: <string>              --Name of the postgres server
+teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserAssignedIdentity resource name
+serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
+teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
 ```
 
 ### NameSpace Queue
