@@ -42,7 +42,11 @@ managedidentity Name. Each service will have one managedidentity and it follows 
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 {{- $teamMIPrefix := (required (printf $requiredMsg "teamMIPrefix") $.Values.teamMIPrefix) }}
 {{- $serviceName := (required (printf $requiredMsg "serviceName") $.Values.serviceName) }}
+{{- if (and $teamMIPrefix $serviceName) }}
 {{- (printf "%s-%s" $teamMIPrefix $serviceName) | lower }}
+{{- else }}
+{{- printf "this-condition-is-required-for-linting" }}
+{{- end }}
 {{- end }}
 
 {{/*
