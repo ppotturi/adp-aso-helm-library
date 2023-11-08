@@ -10,7 +10,7 @@ In your microservice Helm chart:
   * Issue the following commands to add the repo that contains the library chart, update the repo, then update dependencies in your Helm chart:
 
 ```
-helm repo add adp https://raw.githubusercontent.com/defra/adp-aso-helm-repository/main/
+helm repo add adp https://raw.githubusercontent.com/defra/adp-helm-repository/main/adp-aso-helm-library
 helm repo update
 helm dependency update <helm_chart_location>
 ```
@@ -25,7 +25,7 @@ version: 1.0.0
 dependencies:
 - name: adp-aso-helm-library
   version: ^1.0.0
-  repository: https://raw.githubusercontent.com/defra/adp-aso-helm-repository/master/
+  repository: https://raw.githubusercontent.com/defra/adp-helm-repository/main/adp-aso-helm-library
 ```
 
 NOTE: We will use ACR where ASO Helm Library Chart can be published. So above dependencies will be changed to import library from ACR (In Progress).
@@ -39,10 +39,8 @@ The ASO Helm library chart has been configured using the conventions described i
 The general strategy for using one of the library templates in the parent microservice Helm chart is to create a template for the K8s object formateted as so:
 
 ```
-{{- include "adp-aso-helm-library.namespace-queue" (list . "adp-microservice.namespacesqueue") -}}
-{{- define "adp-microservice.namespacesqueue" -}}
-# Microservice specific configuration in here
-{{- end -}}
+{{- include "adp-aso-helm-library.namespace-queue" . -}}
+
 ```
 
 ### All template required values
@@ -66,7 +64,7 @@ tags:
 
 ### Environment specific Default values 
 
-Below values are set in flux repositories and all ASO resources will use these values internally. 
+The below values are used by the ASO templates internally, and their values are set using `platform variables` in `adp-flux-services` repository.
 
 for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
 
@@ -76,6 +74,9 @@ serviceBusResourceGroupName: <string>     --Name of the service bus resource gro
 serviceBusNamespaceName: <string>         --Name of the service bus 
 postgresResourceGroupName: <string>       --Name of the Postgres server resource group
 postgresServerName: <string>              --Name of the postgres server
+teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserAssignedIdentity resource name
+serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
+teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
 ```
 
 ### NameSpace Queue
@@ -99,7 +100,7 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 Note that `namespaceQueues` is an array of objects that can be used to create more than one queue.
 
 Please note that the queue name is prefixed with the `namespace` internally. 
-For example, if the namespace name is "adp-demo" and you have provided the queue name as "queue1," then in the service bus, it creates a queue with the "adp-demo-queue1" name.
+For example, if the namespace name is "adp-demo" and you have provided the queue name as "queue1", then in the service bus, it creates a queue with the `adp-demo-queue1` name.
 
 ```
 namespaceQueues:      
@@ -111,9 +112,13 @@ namespaceQueues:
 
 The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for servicebus queues:
 
+`owner` property is used to control the ownership of the queue. The default value is `yes` and you don't need to provide it if you are creating and owning the queue.
+If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue.
+
 ```
 namespaceQueues:
   - name: <string>
+    owner: <string>                                    --Default yes    (Accepted values = yes, no)
     deadLetteringOnMessageExpiration: <bool>           --Default false
     defaultMessageTimeToLive: <string>                 --Default P14D
     duplicateDetectionHistoryTimeWindow: <string>      --Default PT10M
@@ -126,6 +131,44 @@ namespaceQueues:
     maxSizeInMegabytes: <int>                          --Default 1024
     requiresDuplicateDetection: <bool>                 --Default false
     requiresSession: <bool>                            --Default false
+    roleAssignments:
+      - roleName: <string>                             --<RoleName. for e.g QueueSender>
+```
+
+#### NameSpace Queue: RoleAssignments
+
+This template also optionally allows you to create `Role Assignments` by providing `roleAssignments` properties in the namespaceQueues object.
+
+Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `roleAssignments`.
+
+```
+namespaceQueues:      
+  - name: <string>     
+    roleAssignments:                                    <Array of Object> 
+      - roleName: <string>                              <RoleName. for e.g QueueSender>  (Allowed values QueueSender', 'QueueReceiver')
+      - roleName: <string> 
+```
+
+For e.g. TeamA wanted to create a queue called "claim" and add two role assignments, then the template would look like,
+
+```
+namespaceQueues:
+  name: claim
+  roleAssignments:  
+    - roleName: QueueSender
+    - roleName: QueueReceiver                    
+```
+
+If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
+
+For e.g. TeamB wanted to create one role assignments on TeamA's queue, then the template would look like,
+
+```
+namespaceQueues:
+  name: claim
+  owner: 'no'
+  roleAssignments:  
+    - roleName: QueueReceiver                    
 ```
 
 ### NameSpace Topic
@@ -161,10 +204,13 @@ namespaceTopics:          <Array of Object>
 
 The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for `namespaceTopics`:
 
+`owner` property is used to control the ownership of the topic. The default value is `yes` and you don't need to provide it if you are creating and owning the topic.
+If you are only creating role assignments for the topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing topic.
+
 ```
 namespaceTopics:
   - name: <string>
-    owner: <string>                                    --Default true
+    owner: <string>                                    --Default yes     (Accepted values = yes, no)
     defaultMessageTimeToLive: <string>                 --Default P14D
     duplicateDetectionHistoryTimeWindow: <string>      --Default PT10M
     enableBatchedOperations: <bool>                    --Default true
@@ -174,7 +220,47 @@ namespaceTopics:
     maxSizeInMegabytes: <int>                          --Default 1024
     requiresDuplicateDetection: <bool>                 --Default false
     supportOrdering: <bool>                            --Default true
+    roleAssignments:
+      - roleName: <string>                             --<RoleName. for e.g TopicSender>
 ```
+
+#### NameSpace Topic: RoleAssignments
+
+This template also optionally allows you to create `Role Assignments` by providing `roleAssignments` properties in the namespaceTopics object.
+
+Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `roleAssignments`.
+
+```
+namespaceTopics:      
+  - name: <string>     
+    roleAssignments:                                    <Array of Object> 
+      - roleName: <string>                              <RoleName. for e.g TopicSender>  (Allowed values TopicSender', 'TopicReceiver')
+      - roleName: <string> 
+```
+
+For e.g. TeamA wanted to create a Topic called "calculator" and add two role assignments, then the template would look like,
+
+```
+namespaceTopics:
+  name: calculator
+  roleAssignments:  
+    - roleName: TopicSender
+    - roleName: TopicReceiver                    
+```
+
+If you are creating only role assignments for the Topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic. 
+
+For e.g. TeamB wanted to create one role assignments on TeamA's Topic, then the template would look like,
+
+```
+namespaceTopics:
+  name: calculator
+  owner: 'no'
+  roleAssignments:  
+    - roleName: TopicReceiver                   
+```
+
+#### NameSpace Topic: Subscriptions, SubscriptionRules
 
 This template also optionally allows you to create `Topic Subscriptions` and `Topic Subscriptions Rules` for a given topic by providing Subscriptions and SubscriptionRules properties in the topic object.
 
@@ -306,19 +392,20 @@ A basic usage of this object template would involve the creation of `templates/u
 
 ```
 
+Please note that the UserAssignedIdentity name is set internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions "{TEAM_MI_PREFIX}-{SERVICE_NAME}". For e.g. In SND1 if the `TEAM_MI_PREFIX` value is set to 'sndadpinfmid1401' and `SERVICE_NAME` value is set to 'adp-demo-service', then `managedIdName` value will be : sndadpinfmid1401-adp-demo-service .
+
+This template uses the below platform variables internally, and you don't need to set them explicitly in the values.yaml file. It must be setup in the `adp-flux-services` repository as a part of the service's ASO helmrelease value configuration.
+- TEAM_MI_PREFIX
+- SERVICE_NAME
+- teamResourceGroupName
+- clusterOIDCIssuerUrl
+
 #### Required values
 
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
-Please note that the managedIdName name set internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions "{TEAM_MI_PREFIX}-{SERVICE_NAME}". For e.g. In SND1 the `TEAM_MI_PREFIX` value is set to 'sndadpinfmid1401' and `SERVICE_NAME` value set to 'adp-demo-service', the `managedIdName` value will be : sndadpinfmid1401-adp-demo-service .
-
-Apart from that, this template also uses `clusterOIDCIssuerUrl` and `teamResourceGroupName` variables internally to process this template.  
-
-For example, if the UserAssignedIdentity name is "demo-collector-role" then, it creates a UserAssignedIdentity with the "sndadpinfmid1401-demo-collector-role" name.
-
 ```
-userAssignedIdentity:      
-  managedIdName: <string>
+userAssignedIdentity: {}
 
 ```
 

@@ -1,19 +1,20 @@
 {{- define "adp-aso-helm-library.namespace-queue" -}}
-{{- range $namespaceQueue := .Values.namespaceQueues }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- range $namespaceQueue := .Values.namespaceQueues }}
+{{- $owner := $namespaceQueue.owner | default "yes" }}
+{{- $queueName := include "resource.fullname" (list $ ((required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name) | lower)) }}
+{{- if eq $owner "yes" }}
 apiVersion: servicebus.azure.com/v1api20211101
 kind: NamespacesQueue
-{{- $queueNamePrefix := (required (printf $requiredMsg "namespace") $.Values.namespace) | lower }}
-{{- $queueNameSuffix := (required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name) | lower }}
 metadata:
-  name: {{ $queueNamePrefix }}-{{ $queueNameSuffix }}
+  name: {{ $queueName }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
     {{- toYaml . | nindent 4 }}
   {{- end }}  
 spec:
-  azureName: {{ $queueNamePrefix }}-{{ $queueNameSuffix }}
+  azureName: {{ $queueName }}
   deadLetteringOnMessageExpiration: {{ $namespaceQueue.deadLetteringOnMessageExpiration | default false }}
   defaultMessageTimeToLive: {{ $namespaceQueue.defaultMessageTimeToLive | default "P14D" | quote }} 
   duplicateDetectionHistoryTimeWindow: {{ $namespaceQueue.duplicateDetectionHistoryTimeWindow | default "PT10M" | quote }}  
@@ -31,6 +32,13 @@ spec:
   {{- $serviceBusNamespaceName := required (printf $requiredMsg "serviceBusNamespaceName") $.Values.serviceBusNamespaceName }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s" $subscriptionId $serviceBusResourceGroupName $serviceBusNamespaceName }} 
----  
+ 
+{{- end }}
+{{- if $namespaceQueue.roleAssignments }}    
+---
+{{- include "adp-aso-helm-library.role-assignment-managed" (list $ $namespaceQueue.roleAssignments $queueName "namespaceQueue") }}  
+{{- else }}
+--- 
+{{- end }}  
 {{- end }}
 {{- end }}

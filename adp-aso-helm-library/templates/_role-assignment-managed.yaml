@@ -1,0 +1,28 @@
+{{- define "adp-aso-helm-library.role-assignment-managed" -}}
+{{- $ := index . 0 }}
+{{- $roleAssignments := index . 1 }}
+{{- $resourceName := index . 2 }}
+{{- $resourceType := index . 3 }}
+{{- range $index, $roleAssignment := $roleAssignments }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+apiVersion: authorization.azure.com/v1api20200801preview
+kind: RoleAssignment
+metadata:
+  {{- $roleAssignmentName := (printf "%s-%s-%s" (include "managedidentity.name" $) $roleAssignment.roleName "rbac") | lower  }}
+  name: {{ $roleAssignmentName }}-{{ $index }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace }}
+  {{- with $.Values.asoAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  principalIdFromConfig:
+    name: {{ include "managedidentity.configMapName" $ }} 
+    key: principalId   
+  roleDefinitionReference:   
+    armId: {{ include "roleAssignment.roleDefinitionId" $roleAssignment.roleName }} 
+  owner:
+    armId: {{ include "roleAssignment.scope" (list $ $resourceName $resourceType) }}
+---  
+{{- end }}    
+{{- end }}
