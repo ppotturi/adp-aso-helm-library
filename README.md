@@ -64,7 +64,7 @@ tags:
 
 ### Environment specific Default values 
 
-The below values are used by the aso templates internally, and their values are set using `platform variables` in `adp-flux-services` repositories.
+The below values are used by the ASO templates internally, and their values are set using `platform variables` in `adp-flux-services` repository.
 
 for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
 
@@ -113,7 +113,7 @@ namespaceQueues:
 The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for servicebus queues:
 
 `owner` property is used to control the ownership of the queue. The default value is `yes` and you don't need to provide it if you are creating and owning the queue.
-If you are creating only role assignments for the queue you do not owe, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue.
+If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue.
 
 ```
 namespaceQueues:
@@ -159,7 +159,7 @@ namespaceQueues:
     - roleName: QueueReceiver                    
 ```
 
-If you are creating only role assignments for the queue you do not owe, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
+If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
 
 For e.g. TeamB wanted to create one role assignments on TeamA's queue, then the template would look like,
 
@@ -205,7 +205,7 @@ namespaceTopics:          <Array of Object>
 The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for `namespaceTopics`:
 
 `owner` property is used to control the ownership of the topic. The default value is `yes` and you don't need to provide it if you are creating and owning the topic.
-If you are only creating role assignments for the topic you do not owe, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing topic.
+If you are only creating role assignments for the topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing topic.
 
 ```
 namespaceTopics:
@@ -248,7 +248,7 @@ namespaceTopics:
     - roleName: TopicReceiver                    
 ```
 
-If you are creating only role assignments for the Topic you do not owe, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic. 
+If you are creating only role assignments for the Topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic. 
 
 For e.g. TeamB wanted to create one role assignments on TeamA's Topic, then the template would look like,
 
