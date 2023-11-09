@@ -55,7 +55,9 @@ namespace: <string>
 
 The below values are used by the ASO templates internally, and their values are set using `platform variables` in `adp-flux-services` repository.
 
-for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
+for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namespace and postgres database will get created inside `postgresServerName` server.
+
+Whilst the Platform orchestration will manage the 'platform' level variables, they can be optionally supplied in some circumstances. Examples include in sandpit/development when testing against team-specific infrastructure (that isn't Platform shared). So, if you have a dedicated Service Bus or Database Server instance, you can point to those to ensure you apps works as expected. Otherwise, don't supply the Platform level variables as these will be automatically managed and orchestrated throughout all the environments appropriately against core shared infrastructure. You (as a Platform Tenant) just supply your team-specific/instance specific infrastructure config' (i.e. Queues, Storage Accounts, Databases).
 
 ```
 namespace: <string>                       --namespace name
@@ -394,14 +396,13 @@ A basic usage of this object template would involve the creation of `templates/u
 
 ```
 
-This template does not require you to supply any required values in the values.yaml in the file.
-
 This template uses the below values, whose values are set using platform variables in the `adp-flux-services` repository as a part of the service's ASO helmrelease value configuration, and you don't need to set them explicitly in the values.yaml file.
 
 - teamMIPrefix
 - serviceName
 - teamResourceGroupName
 - clusterOIDCIssuerUrl
+
 
 UserAssignedIdentity Name is derived internally, and it is set to = `{TEAM_MI_PREFIX}-{SERVICE_NAME}`
 
@@ -422,8 +423,7 @@ This template also optionally allows you to create `Federated credentials` for a
 Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
 
 ```
-userAssignedIdentity:      
-  - managedIdName: <string>     
+userAssignedIdentity:     
     federatedCreds:                      <Array of Object> 
       - namespace: <string>                    
         serviceAccountName: <string>     
@@ -435,7 +435,6 @@ For e.g. The below example will create one userAssignedIdentity, two role assign
 ```
 
 userAssignedIdentity:
-  managedIdName: demo-role
   federatedCreds: 
     - namespace: ffc-demo
       serviceAccountName: ffc-demo    
