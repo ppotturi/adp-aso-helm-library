@@ -8,18 +8,24 @@ A default message string to be used when checking for a required value
 {{/*
 Common Tags for Azure resources
 */}}
-{{- define "adp-aso-helm-library.tags" -}}
+{{- define "adp-aso-helm-library.commontags" -}}
+{{- $ := index . 0 }}
+{{- $userTags := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-Environment: {{ required (printf $requiredMsg "tags.Environment") .Values.tags.Environment | quote }}
-ServiceCode: {{ required (printf $requiredMsg "tags.ServiceCode") .Values.tags.ServiceCode | quote }}
-ServiceName: {{ required (printf $requiredMsg "tags.ServiceName") .Values.tags.ServiceName | quote }}
-ServiceType: {{ .Values.tags.ServiceType | default "Dedicated" }}
-Purpose: {{ required (printf $requiredMsg "tags.Purpose") .Values.tags.Purpose | quote }}
+{{- if $.Values.commontags }}
+Environment: {{ required (printf $requiredMsg "commontags.Environment") $.Values.commontags.Environment | quote }}
+ServiceCode: {{ required (printf $requiredMsg "commontags.ServiceCode") $.Values.commontags.ServiceCode | quote }}
+ServiceName: {{ required (printf $requiredMsg "commontags.ServiceName") $.Values.commontags.ServiceName | quote }}
+ServiceType: {{ $.Values.commontags.ServiceType | default "Dedicated" }}
 ManagedBy: AzureServiceOperator
 Restriction: AUTOMATED CHANGES ONLY
-kubernetes_cluster: {{ required (printf $requiredMsg "tags.kubernetes_cluster") .Values.tags.kubernetes_cluster | quote }}
-kubernetes_namespace: {{ required (printf $requiredMsg "tags.kubernetes_namespace") .Values.namespace | quote }}
-kubernetes_label_ServiceCode: {{ required (printf $requiredMsg "tags.kubernetes_label_ServiceCode") .Values.tags.ServiceCode | quote }}
+kubernetes_cluster: {{ required (printf $requiredMsg "commontags.kubernetes_cluster") $.Values.commontags.kubernetes_cluster | quote }}
+kubernetes_namespace: {{ required (printf $requiredMsg "commontags.kubernetes_namespace") $.Values.namespace | quote }}
+kubernetes_label_ServiceCode: {{ required (printf $requiredMsg "commontags.kubernetes_label_ServiceCode") $.Values.commontags.ServiceCode | quote }}
+{{- end }}
+{{- if $userTags }}
+{{ toYaml $userTags }}
+{{- end }}
 {{- end -}}
 
 
@@ -69,6 +75,8 @@ roleDefinitionId for the roleAssignment
 {{- printf (include "builtInRole.azureServiceBusDataSenderId" .) }}
 {{- else if eq $roleName "topicreceiver" }}
 {{- printf (include "builtInRole.azureServiceBusDataReceiverId" .) }}
+{{- else if eq $roleName "keyvaultsecretuser" }}
+{{- printf (include "builtInRole.keyVaultSecretsUserId" .) }}
 {{- else }}
 {{- fail (printf "Value for roleName is not as expected. '%s' role is not in the allowed roles." $roleName) }}
 {{- end }}
@@ -86,5 +94,7 @@ Scope for the roleAssignment
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/queues/%s" $.Values.subscriptionId $.Values.serviceBusResourceGroupName $.Values.serviceBusNamespaceName $resourceName }}
 {{- else if eq $resourceType "namespaceTopic" }}
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/topics/%s" $.Values.subscriptionId $.Values.serviceBusResourceGroupName $.Values.serviceBusNamespaceName $resourceName }}
+{{- else if eq $resourceType "keyVaultSecret" }}
+{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.KeyVault/vaults/%s/secrets/%s" $.Values.subscriptionId $.Values.infraResourceGroupName $.Values.keyVaultName $resourceName }}
 {{- end }}
 {{- end }}

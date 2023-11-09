@@ -6,6 +6,8 @@ metadata:
   {{- $managedIdName := include "managedidentity.name" . }}
   {{- $managedIdConfigMapName :=  include "managedidentity.configMapName" . }}
   {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
+  {{- $userAssignedIdentityObject := required (printf $requiredMsg "userAssignedIdentity") .Values.userAssignedIdentity }}
+  {{- $commontags := required (printf $requiredMsg "commontags") .Values.commontags }}
   name: {{ $managedIdName }}
   namespace: {{ required (printf $requiredMsg "namespace") .Values.namespace }}
   {{- with .Values.asoAnnotations }}
@@ -14,7 +16,13 @@ metadata:
   {{- end }}
 spec:
   azureName: {{ $managedIdName }}
-  location: {{ .Values.userAssignedIdentity.location | default "uksouth" | quote }}
+  {{- if .Values.userAssignedIdentity }}  
+  {{- if .Values.userAssignedIdentity.location }} 
+  location: {{ .Values.userAssignedIdentity.location | quote }}
+  {{- end }}
+  {{- else }}
+  location: {{ "uksouth" | quote }}
+  {{- end }}
   operatorSpec:
     configMaps:
       principalId:
@@ -27,18 +35,15 @@ spec:
         name: {{ $managedIdConfigMapName }} 
         key: tenantId    
   tags: 
-  {{- include "adp-aso-helm-library.tags" . | indent  4 }}      
+  {{- include "adp-aso-helm-library.commontags" (list . "") | indent 4 }} 
   {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }}
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
 
+{{- if .Values.userAssignedIdentity }}  
 {{- if .Values.userAssignedIdentity.federatedCreds }}    
 --- 
 {{- include "adp-aso-helm-library.federated-credential" $ }}   
-{{- end }} 
-
-{{- if .Values.userAssignedIdentity.roleAssignments }}    
----
-{{- include "adp-aso-helm-library.role-assignment" $ }}   
-{{- end }}     
+{{- end }}    
+{{- end }}
 {{- end }}

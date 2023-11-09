@@ -48,35 +48,39 @@ The general strategy for using one of the library templates in the parent micros
 All the K8s object templates in the library require the following values to be set in the parent microservice Helm chart's `values.yaml`:
 
 ```
-name: <string>
 namespace: <string>
-
-tags:
-  Environment: <string>
-  ServiceCode: <string>
-  ServiceName: <string>
-  ServiceType: <string> (Shared or Dedicated)
-  Purpose: <string>
-  kubernetes_cluster: <string>
-  kubernetes_namespace: <string>
-  kubernetes_label_ServiceCode: <string>
 ```
 
 ### Environment specific Default values 
 
 The below values are used by the ASO templates internally, and their values are set using `platform variables` in `adp-flux-services` repository.
 
-for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namaspace and postgres database will get created inside `postgresServerName` server.
+for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` namespace and postgres database will get created inside `postgresServerName` server.
+
+Whilst the Platform orchestration will manage the 'platform' level variables, they can be optionally supplied in some circumstances. Examples include in sandpit/development when testing against team-specific infrastructure (that isn't Platform shared). So, if you have a dedicated Service Bus or Database Server instance, you can point to those to ensure you apps works as expected. Otherwise, don't supply the Platform level variables as these will be automatically managed and orchestrated throughout all the environments appropriately against core shared infrastructure. You (as a Platform Tenant) just supply your team-specific/instance specific infrastructure config' (i.e. Queues, Storage Accounts, Databases).
 
 ```
+namespace: <string>                       --namespace name
 subscriptionId: <string>                  --subscription Id
 serviceBusResourceGroupName: <string>     --Name of the service bus resource group
-serviceBusNamespaceName: <string>         --Name of the service bus 
+serviceBusNamespaceName: <string>         --Name of the environment specific service bus 
 postgresResourceGroupName: <string>       --Name of the Postgres server resource group
-postgresServerName: <string>              --Name of the postgres server
+postgresServerName: <string>              --Name of the environment specific postgres server
+infraResourceGroupName: <string>          --Name of the infra resource group (This is also a resource group for the Keyvault)
+keyVaultName: <string>                    --Name of the environment specific keyVaultName
 teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserAssignedIdentity resource name
 serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
 teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
+
+tags:
+  Environment: <string>
+  ServiceCode: <string>
+  ServiceName: <string>
+  ServiceType: <string> (Shared or Dedicated)
+  kubernetes_cluster: <string>
+  kubernetes_namespace: <string>
+  kubernetes_label_ServiceCode: <string>
+
 ```
 
 ### NameSpace Queue
@@ -360,7 +364,7 @@ An ASO `FlexibleServersDatabase` object.
 A basic usage of this object template would involve the creation of `templates/flexible-servers-db.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
 
 ```
-{{- include "adp-aso-helm-library.flexible-servers-db" (list . "adp-microservice.service") -}}
+{{- include "adp-aso-helm-library.flexible-servers-db" (list . "adp-microservice.postgres-flexible-db") -}}
 {{- define "adp-microservice.postgres-flexible-db" -}}
 # Microservice specific configuration in here
 {{- end -}}
@@ -392,22 +396,17 @@ A basic usage of this object template would involve the creation of `templates/u
 
 ```
 
-Please note that the UserAssignedIdentity name is set internally. This value is set in the `adp-flux-services` repository which follows standard naming conventions "{TEAM_MI_PREFIX}-{SERVICE_NAME}". For e.g. In SND1 if the `TEAM_MI_PREFIX` value is set to 'sndadpinfmid1401' and `SERVICE_NAME` value is set to 'adp-demo-service', then `managedIdName` value will be : sndadpinfmid1401-adp-demo-service .
+This template uses the below values, whose values are set using platform variables in the `adp-flux-services` repository as a part of the service's ASO helmrelease value configuration, and you don't need to set them explicitly in the values.yaml file.
 
-This template uses the below platform variables internally, and you don't need to set them explicitly in the values.yaml file. It must be setup in the `adp-flux-services` repository as a part of the service's ASO helmrelease value configuration.
-- TEAM_MI_PREFIX
-- SERVICE_NAME
+- teamMIPrefix
+- serviceName
 - teamResourceGroupName
 - clusterOIDCIssuerUrl
 
-#### Required values
 
-The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+UserAssignedIdentity Name is derived internally, and it is set to = `{TEAM_MI_PREFIX}-{SERVICE_NAME}`
 
-```
-userAssignedIdentity: {}
-
-```
+For e.g. In SND1 if the `TEAM_MI_PREFIX` value is set to "sndadpinfmid1401" and `SERVICE_NAME` value is set to "adp-demo-service", then `UserAssignedIdentity` value will be : "sndadpinfmid1401-adp-demo-service".
 
 #### Optional values
 
@@ -419,17 +418,12 @@ userAssignedIdentity:
 
 ```
 
-This template also optionally allows you to create `Role Assignments` and `Federated credentials` for a given User Assigned Identity by providing `roleAssignments` and `federatedCreds` properties in the userAssignedIdentity object.
+This template also optionally allows you to create `Federated credentials` for a given User Assigned Identity by providing `federatedCreds` properties in the userAssignedIdentity object.
 
 Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
 
 ```
-userAssignedIdentity:      
-  - managedIdName: <string>     
-    roleAssignments:                     <Array of Object> 
-      - name: <string>                   <Name. for e.g Queue-Reader>
-        scope: <string>                  <Target resource. It should be fully qualified ARM Id of the resource>
-        roleDefinitionId: <string>       <The role definition ID.>
+userAssignedIdentity:     
     federatedCreds:                      <Array of Object> 
       - namespace: <string>                    
         serviceAccountName: <string>     
@@ -441,14 +435,6 @@ For e.g. The below example will create one userAssignedIdentity, two role assign
 ```
 
 userAssignedIdentity:
-  managedIdName: demo-role
-  roleAssignments:  
-    - name: QueueDataReceiver
-      scope: '/subscriptions/<subscriptionID>/resourceGroups/<resourceGroupName>/providers/Microsoft.ServiceBus/namespaces/<serviceBusNameSpaceName>/queues/ffc-demo-claim'
-      roleDefinitionId: 4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0
-    - name: QueueDataSender
-      scope: '/subscriptions/<subscriptionID>/resourceGroups/<resourceGroupName>/providers/Microsoft.ServiceBus/namespaces/<serviceBusNameSpaceName>/queues/ffc-demo-payment'
-      roleDefinitionId: 69a216fc-b8fb-44d8-bc22-1f3c2cd27a39
   federatedCreds: 
     - namespace: ffc-demo
       serviceAccountName: ffc-demo    
@@ -472,10 +458,10 @@ A template defining the default message to print when checking for a required va
 
 ### Tags
 
-* Template name: `adp-aso-helm-library.tags`
-* Usage: `{{- include "adp-aso-helm-library.tags" $ | nindent 4 }}` (`$` is mapped to the root scope)
+* Template name: `adp-aso-helm-library.commontags`
+* Usage: `{{- include "adp-aso-helm-library.commontags" $ | nindent 4 }}` (`$` is mapped to the root scope)
 
-Common tags to apply to `tags` of all ASO resource objects on the ADP K8s platform. This template relies on the globally required values [listed above](#all-template-required-values).
+Common tags to apply to `tags` of all ASO resource objects on the ADP K8s platform. This template relies on the globally required values [listed above](#environment-specific-default-values).
 
 ### Labels 
     In Progress.
