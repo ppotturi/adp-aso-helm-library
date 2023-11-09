@@ -61,9 +61,11 @@ for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` nama
 namespace: <string>                       --namespace name
 subscriptionId: <string>                  --subscription Id
 serviceBusResourceGroupName: <string>     --Name of the service bus resource group
-serviceBusNamespaceName: <string>         --Name of the service bus 
+serviceBusNamespaceName: <string>         --Name of the environment specific service bus 
 postgresResourceGroupName: <string>       --Name of the Postgres server resource group
-postgresServerName: <string>              --Name of the postgres server
+postgresServerName: <string>              --Name of the environment specific postgres server
+infraResourceGroupName: <string>          --Name of the service bus resource group
+keyVaultName: <string>                    --Name of the environment specific keyVaultName
 teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserAssignedIdentity resource name
 serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
 teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.

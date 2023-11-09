@@ -75,6 +75,8 @@ roleDefinitionId for the roleAssignment
 {{- printf (include "builtInRole.azureServiceBusDataSenderId" .) }}
 {{- else if eq $roleName "topicreceiver" }}
 {{- printf (include "builtInRole.azureServiceBusDataReceiverId" .) }}
+{{- else if eq $roleName "keyvaultsecretuser" }}
+{{- printf (include "builtInRole.keyVaultSecretsUserId" .) }}
 {{- else }}
 {{- fail (printf "Value for roleName is not as expected. '%s' role is not in the allowed roles." $roleName) }}
 {{- end }}
@@ -92,5 +94,7 @@ Scope for the roleAssignment
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/queues/%s" $.Values.subscriptionId $.Values.serviceBusResourceGroupName $.Values.serviceBusNamespaceName $resourceName }}
 {{- else if eq $resourceType "namespaceTopic" }}
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/topics/%s" $.Values.subscriptionId $.Values.serviceBusResourceGroupName $.Values.serviceBusNamespaceName $resourceName }}
+{{- else if eq $resourceType "keyVaultSecret" }}
+{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.KeyVault/vaults/%s/secrets/%s" $.Values.subscriptionId $.Values.infraResourceGroupName $.Values.keyVaultName $resourceName }}
 {{- end }}
 {{- end }}
