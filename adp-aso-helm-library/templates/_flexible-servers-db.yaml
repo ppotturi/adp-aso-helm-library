@@ -3,10 +3,10 @@
 apiVersion: dbforpostgresql.azure.com/v1api20210601
 kind: FlexibleServersDatabase
 metadata:
-  {{ $serverName := required (printf $requiredMsg "postgresServerName") .Values.postgresServerName }}
+  {{ $postgresServerName := required (printf $requiredMsg "postgresServerName") .Values.postgresServerName }}
   {{ $dbName := required (printf $requiredMsg "postgres.db.name") .Values.postgres.db.name }}
   {{ $namespace := required (printf $requiredMsg "namespace") .Values.namespace }}
-  name: {{ (printf "%s-%s-%s" $serverName $namespace $dbName) | lower }}
+  name: {{ (printf "%s-%s-%s" $postgresServerName $namespace $dbName) | lower }}
   namespace: {{ $namespace }}
   {{ with .Values.asoAnnotations }}
   annotations:
@@ -16,8 +16,10 @@ spec:
   azureName: {{ (printf "%s-%s" $namespace $dbName) | lower }}
   charset: {{ .Values.postgres.db.charset }}
   collation: {{ .Values.postgres.db.collation }}
+  {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }}
+  {{- $postgresResourceGroupName := required (printf $requiredMsg "postgresResourceGroupName") .Values.postgresResourceGroupName }}
   owner:
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" .Values.subscriptionId .Values.postgresResourceGroupName .Values.postgresServerName }}
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s" $subscriptionId $postgresResourceGroupName $postgresServerName }}
 {{- end }}
 
 {{- define "adp-aso-helm-library.flexible-servers-db" }}

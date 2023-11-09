@@ -1,5 +1,6 @@
 {{- define "adp-aso-helm-library.namespace-queue" -}}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $namespaceQueueObject := required (printf $requiredMsg "namespaceQueues") .Values.namespaceQueues }}
 {{- range $namespaceQueue := .Values.namespaceQueues }}
 {{- $owner := $namespaceQueue.owner | default "yes" }}
 {{- $queueName := include "resource.fullname" (list $ ((required (printf $requiredMsg "namespaceQueue.name") $namespaceQueue.name) | lower)) }}

@@ -1,5 +1,6 @@
 {{- define "adp-aso-helm-library.namespace-topic" -}}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $namespaceTopicObject := required (printf $requiredMsg "namespaceTopics") .Values.namespaceTopics }}
 {{- range $namespaceTopic := .Values.namespaceTopics }}
 {{- $owner := $namespaceTopic.owner | default "yes" }}
 {{- $topicName := include "resource.fullname" (list $ (required (printf $requiredMsg "namespaceTopic.name") $namespaceTopic.name)) }}
