@@ -16,12 +16,10 @@ metadata:
   {{- end }}
 spec:
   azureName: {{ $managedIdName }}
-  {{- if .Values.userAssignedIdentity }}  
-  {{- if .Values.userAssignedIdentity.location }} 
+  {{- if and .Values.userAssignedIdentity .Values.userAssignedIdentity.location }} 
   location: {{ .Values.userAssignedIdentity.location | quote }}
-  {{- end }}
   {{- else }}
-  location: {{ "uksouth" | quote }}
+  location: "uksouth"
   {{- end }}
   operatorSpec:
     configMaps:
@@ -40,10 +38,9 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
 
-{{- if .Values.userAssignedIdentity }}  
-{{- if .Values.userAssignedIdentity.federatedCreds }}    
+{{- if and .Values.userAssignedIdentity .Values.userAssignedIdentity.federatedCreds }}    
 --- 
 {{- include "adp-aso-helm-library.federated-credential" $ }}   
 {{- end }}    
-{{- end }}
+
 {{- end }}
