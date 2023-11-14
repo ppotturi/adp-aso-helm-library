@@ -8,7 +8,7 @@
 apiVersion: authorization.azure.com/v1api20200801preview
 kind: RoleAssignment
 metadata:
-  {{- $roleAssignmentName := (printf "%s-%s-%s" (include "managedidentity.name" $) $roleAssignment.roleName "rbac") | lower  }}
+  {{- $roleAssignmentName := (printf "%s-%s-%s-%s" (include "managedidentity.name" $) $resourceName $roleAssignment.roleName "rbac") | lower | trunc 115 }}
   name: {{ $roleAssignmentName }}-{{ $index }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace }}
   {{- with $.Values.asoAnnotations }}
