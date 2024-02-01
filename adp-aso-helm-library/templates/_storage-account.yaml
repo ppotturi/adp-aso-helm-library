@@ -4,19 +4,20 @@
 {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }} 
 {{- $storageAccountObject := required (printf $requiredMsg "storageAccounts") .Values.storageAccounts }}
 {{- range $storageAccount := .Values.storageAccounts }}
+{{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
 {{- $owner := $storageAccount.owner | default "yes" }}
 {{- if eq $owner "yes" }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
 metadata:
-  name: {{ $storageAccount.name }}
+  name: {{ $storageAccountName }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
     {{- toYaml . | nindent 4 }}
   {{- end }}  
 spec:
-  azureName: {{ $storageAccount.name }}
+  azureName: {{ $storageAccountName }}
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
   kind: {{ $storageAccount.kind | default "StorageV2" }} 
   sku:

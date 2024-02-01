@@ -78,6 +78,10 @@ roleDefinitionId for the roleAssignment
 {{- printf (include "builtInRole.azureServiceBusDataReceiverId" .) }}
 {{- else if eq $roleName "keyvaultsecretuser" }}
 {{- printf (include "builtInRole.keyVaultSecretsUserId" .) }}
+{{- else if eq $roleName "tabledatacontributor" }}
+{{- printf (include "builtInRole.storageTableDataContributorId" .) }}
+{{- else if eq $roleName "blobdatacontributor" }}
+{{- printf (include "builtInRole.storageBlobDataContributorId" .) }}
 {{- else }}
 {{- fail (printf "Value for roleName is not as expected. '%s' role is not in the allowed roles." $roleName) }}
 {{- end }}
@@ -97,6 +101,25 @@ Scope for the roleAssignment
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/topics/%s" $.Values.subscriptionId $.Values.serviceBusResourceGroupName $.Values.serviceBusNamespaceName $resourceName }}
 {{- else if eq $resourceType "keyVaultSecret" }}
 {{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.KeyVault/vaults/%s/secrets/%s" $.Values.subscriptionId $.Values.keyVaultResourceGroupName $.Values.keyVaultName (printf "%s-%s" $.Values.serviceName $resourceName) }}
+{{- else }}
+{{- fail (printf "Value for resourceType is not as expected. '%s' is not in the allowed scope." $resourceType) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Scope for the Storage account roleAssignment
+*/}}
+{{- define "storage.roleAssignment.scope" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountName := index . 1 }}
+{{- $resourceName := index . 2 }}
+{{- $resourceType := index . 3 }}
+{{- if eq $resourceType "storageContainer" }}
+{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName $resourceName }}
+{{- else if eq $resourceType "storageTable" }}
+{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.Storage/storageAccounts/%s/tableServices/default/tables/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName $resourceName }}
+{{- else }}
+{{- fail (printf "Value for resourceType is not as expected. '%s' is not in the allowed scope." $resourceType) }}
 {{- end }}
 {{- end }}
 

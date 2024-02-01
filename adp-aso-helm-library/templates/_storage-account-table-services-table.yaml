@@ -18,5 +18,9 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/tableServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
 --- 
+{{- if $storageAccountsTableServicesTable.roleAssignments }}    
+--- 
+{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccountsTableServicesTable.roleAssignments $storageAccountName $storageAccountsTableServicesTable.name "storageTable") }}   
+{{- end }} 
 {{- end }}
 {{- end }}
