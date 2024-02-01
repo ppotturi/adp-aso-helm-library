@@ -99,3 +99,29 @@ Scope for the roleAssignment
 {{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.KeyVault/vaults/%s/secrets/%s" $.Values.subscriptionId $.Values.keyVaultResourceGroupName $.Values.keyVaultName (printf "%s-%s" $.Values.serviceName $resourceName) }}
 {{- end }}
 {{- end }}
+
+{{/*
+default name for StorageAccountsBlobService, StorageAccountsTableService, StorageAccountsFileService, StorageAccountsQueueService
+*/}}
+{{- define "storageaccountsService.defaultName" -}}
+{{- $storageAccountName := index . 0 }}
+{{- (printf "%s-default" $storageAccountName) | lower }}
+{{- end }}
+
+{{/*
+Storage account blob service container FullName
+*/}}
+{{- define "storageAccountsBlobServicesContainer.fullname" -}}
+{{- $storageAccountName := index . 0 }}
+{{- $containerName := index . 1 }}
+{{- (printf "%s-%s" (include "storageaccountsService.defaultName" (list $storageAccountName)) $containerName) | lower }}
+{{- end }}
+
+{{/*
+Storage account Table FullName
+*/}}
+{{- define "storageAccountsTableServicesTable.fullname" -}}
+{{- $storageAccountName := index . 0 }}
+{{- $tableName := index . 1 }}
+{{- (printf "%s-%s" (include "storageaccountsService.defaultName" (list $storageAccountName)) $tableName) | lower }}
+{{- end }}

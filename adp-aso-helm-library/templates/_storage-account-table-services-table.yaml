@@ -1,0 +1,22 @@
+{{- define "adp-aso-helm-library.storage-account-table-services-table" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountObj := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $storageAccountName := $storageAccountObj.name }}
+{{- range $storageAccountsTableServicesTable := $storageAccountObj.storageAccountsTableServicesTables }}
+apiVersion: storage.azure.com/v1api20220901
+kind: StorageAccountsTableServicesTable
+metadata:
+  name: {{ include "storageAccountsTableServicesTable.fullname" (list $storageAccountName $storageAccountsTableServicesTable.name) }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
+  {{- with $.Values.asoAnnotations }}
+  annotations: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  azureName: {{ $storageAccountsTableServicesTable.name }}
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/tableServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
+--- 
+{{- end }}
+{{- end }}

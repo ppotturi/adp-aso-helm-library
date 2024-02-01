@@ -3,12 +3,11 @@
 {{- $storageAccountObj := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 {{- $storageAccountName := $storageAccountObj.name }}
-{{- $storageAccountsBlobServiceName := include "storageaccountsblobService.fullname" (list $storageAccountName) }}
 {{- range $storageAccountsBlobServicesContainer := $storageAccountObj.storageAccountsBlobServicesContainers }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsBlobServicesContainer
 metadata:
-  name: {{ include "storageaccountsblobservicescontainer.fullname" (list $storageAccountName $storageAccountsBlobServicesContainer.name) }}
+  name: {{ include "storageAccountsBlobServicesContainer.fullname" (list $storageAccountName $storageAccountsBlobServicesContainer.name) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 

@@ -58,5 +58,9 @@ spec:
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-services-container" (list $ .) }} 
 {{- end }} 
+{{- if $storageAccount.storageAccountsTableServicesTables }}  
+---  
+{{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }} 
+{{- end }} 
 {{- end }}
 {{- end }}
