@@ -72,14 +72,14 @@ teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserA
 serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
 teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
 
-tags:
-  Environment: <string>
-  ServiceCode: <string>
-  ServiceName: <string>
-  ServiceType: <string> (Shared or Dedicated)
+commonTags:
+  environment: <string>
+  serviceCode: <string>
+  serviceName: <string>
+  serviceType: <string> (Shared or Dedicated)
   kubernetes_cluster: <string>
   kubernetes_namespace: <string>
-  kubernetes_label_ServiceCode: <string>
+  kubernetes_label_serviceCode: <string>
 
 ```
 

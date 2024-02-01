@@ -1,0 +1,66 @@
+{{- define "adp-aso-helm-library.storage-account-blob-service" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountObj := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $storageAccountName := $storageAccountObj.name }}
+{{- $storageAccountsBlobServiceName := printf "%s-default" $storageAccountName }}
+apiVersion: storage.azure.com/v1api20220901
+kind: StorageAccountsBlobService
+metadata:
+  name: {{ $storageAccountsBlobServiceName }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
+  {{- with $.Values.asoAnnotations }}
+  annotations: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and $storageAccountObj.storageAccountsBlobService.changeFeed $storageAccountObj.storageAccountsBlobService.changeFeed.enabled }}
+  {{- $changeFeedRetentionInDays := required (printf $requiredMsg "storageAccountsBlobService.changeFeed.retentionInDays") $storageAccountObj.storageAccountsBlobService.changeFeed.retentionInDays }}
+  changeFeed:
+    enabled: true
+    retentionInDays: {{ $changeFeedRetentionInDays }}
+  {{- else }}
+  changeFeed:
+    enabled: false
+  {{- end }}  
+
+  {{- if and $storageAccountObj.storageAccountsBlobService.containerDeleteRetentionPolicy $storageAccountObj.storageAccountsBlobService.containerDeleteRetentionPolicy.enabled }}
+  {{- $containerDeleteRetentionInDays := required (printf $requiredMsg "storageAccountsBlobService.containerDeleteRetentionPolicy.days") $storageAccountObj.storageAccountsBlobService.containerDeleteRetentionPolicy.days }}
+  containerDeleteRetentionPolicy:
+    enabled: true
+    days: {{ $containerDeleteRetentionInDays }}
+  {{- else }}
+  containerDeleteRetentionPolicy:
+    enabled: false
+  {{- end }} 
+
+  {{- if and $storageAccountObj.storageAccountsBlobService.deleteRetentionPolicy $storageAccountObj.storageAccountsBlobService.deleteRetentionPolicy.enabled }}
+  {{- $blobDeleteRetentionInDays := required (printf $requiredMsg "storageAccountsBlobService.deleteRetentionPolicy.days") $storageAccountObj.storageAccountsBlobService.deleteRetentionPolicy.days }}
+  deleteRetentionPolicy:
+    allowPermanentDelete: {{ $storageAccountObj.storageAccountsBlobService.deleteRetentionPolicy.allowPermanentDelete | default false }}
+    enabled: true
+    days: {{ $blobDeleteRetentionInDays }}
+  {{- else }}
+  deleteRetentionPolicy:
+    {{- if $storageAccountObj.storageAccountsBlobService.deleteRetentionPolicy }}
+    allowPermanentDelete: {{ $storageAccountObj.storageAccountsBlobService.deleteRetentionPolicy.allowPermanentDelete | default false }}
+    {{- else }}
+    allowPermanentDelete: false
+    {{- end }} 
+    enabled: false
+  {{- end }} 
+
+  {{- if and $storageAccountObj.storageAccountsBlobService.restorePolicy $storageAccountObj.storageAccountsBlobService.restorePolicy.enabled }}
+  {{- $restoreInInDays := required (printf $requiredMsg "storageAccountsBlobService.restorePolicy.days") $storageAccountObj.storageAccountsBlobService.restorePolicy.days }}
+  restorePolicy:
+    enabled: true
+    days: {{ $restoreInInDays }}
+  {{- else }}
+  restorePolicy:
+    enabled: false
+  {{- end }}   
+  isVersioningEnabled: {{ $storageAccountObj.storageAccountsBlobService.isVersioningEnabled | default false }}
+  cors: {}
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
+{{- end }}

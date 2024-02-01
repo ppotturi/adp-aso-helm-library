@@ -1,0 +1,62 @@
+{{- define "adp-aso-helm-library.storage-account" -}}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
+{{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }} 
+{{- $storageAccountObject := required (printf $requiredMsg "storageAccounts") .Values.storageAccounts }}
+{{- range $storageAccount := .Values.storageAccounts }}
+{{- $owner := $storageAccount.owner | default "yes" }}
+{{- if eq $owner "yes" }}
+apiVersion: storage.azure.com/v1api20220901
+kind: StorageAccount
+metadata:
+  name: {{ $storageAccount.name }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
+  {{- with $.Values.asoAnnotations }}
+  annotations: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}  
+spec:
+  azureName: {{ $storageAccount.name }}
+  accessTier: {{ $storageAccount.accessTier | default "Hot" }}
+  kind: {{ $storageAccount.kind | default "StorageV2" }} 
+  sku:
+    name: Standard_RAGRS
+    tier: Standard
+  location: {{ $storageAccount.location | default "uksouth" | quote }}
+  allowBlobPublicAccess: {{ $storageAccount.allowBlobPublicAccess | default false }}
+  allowCrossTenantReplication: {{ $storageAccount.allowCrossTenantReplication | default false }}
+  allowSharedKeyAccess: {{ $storageAccount.allowSharedKeyAccess | default true }}  
+  defaultToOAuthAuthentication: {{ $storageAccount.defaultToOAuthAuthentication | default false }} 
+  dnsEndpointType: {{ $storageAccount.dnsEndpointType | default "Standard" | quote }}
+  encryption:
+    keySource: Microsoft.Storage
+    requireInfrastructureEncryption: false
+    services:
+      blob:
+        enabled: true
+        keyType: Account
+      file:
+        enabled: true
+        keyType: Account
+  minimumTlsVersion: {{ $storageAccount.minimumTlsVersion | default "TLS1_2" | quote }}
+  networkAcls:
+    bypass: AzureServices
+    defaultAction: Allow
+  publicNetworkAccess: Enabled
+  supportsHttpsTrafficOnly: true
+  tags:
+  {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}  
+
+{{- end }} 
+{{- if $storageAccount.storageAccountsBlobService }}  
+---  
+{{- include "adp-aso-helm-library.storage-account-blob-service" (list $ .) }} 
+{{- end }} 
+{{- if $storageAccount.storageAccountsBlobServicesContainers }}  
+---  
+{{- include "adp-aso-helm-library.storage-account-blob-services-container" (list $ .) }} 
+{{- end }} 
+{{- end }}
+{{- end }}
