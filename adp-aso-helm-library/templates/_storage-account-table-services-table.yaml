@@ -3,7 +3,7 @@
 {{- $storageAccountObj := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 {{- $storageAccountName := $storageAccountObj.name }}
-{{- range $storageAccountsTableServicesTable := $storageAccountObj.storageAccountsTableServicesTables }}
+{{- range $storageAccountsTableServicesTable := $storageAccountObj.tables }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsTableServicesTable
 metadata:

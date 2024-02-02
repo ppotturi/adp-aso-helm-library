@@ -9,7 +9,7 @@
 apiVersion: authorization.azure.com/v1api20200801preview
 kind: RoleAssignment
 metadata:
-  {{- $roleAssignmentName := (printf "%s-%s-%s-%s" (include "managedidentity.name" $) $resourceName $roleAssignment.roleName "rbac") | lower | trunc 115 }}
+  {{- $roleAssignmentName := (printf "%s-%s-%s-%s-%s" (include "managedidentity.name" $) $storageAccountName $resourceName $roleAssignment.roleName "rbac") | lower | trunc 115 }}
   name: {{ $roleAssignmentName }}-{{ $index }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
   {{- with $.Values.asoAnnotations }}

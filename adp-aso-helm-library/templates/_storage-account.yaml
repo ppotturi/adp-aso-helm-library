@@ -10,7 +10,7 @@
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
 metadata:
-  name: {{ $storageAccountName }}
+  name: {{ printf "%s-%s" $.Values.serviceName $storageAccountName }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
@@ -19,19 +19,19 @@ metadata:
 spec:
   azureName: {{ $storageAccountName }}
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
-  kind: {{ $storageAccount.kind | default "StorageV2" }} 
+  kind: StorageV2
   sku:
-    name: Standard_RAGRS
+    name: {{ $storageAccount.sku.name | default "Standard_LRS" }}
     tier: Standard
   location: {{ $storageAccount.location | default "uksouth" | quote }}
   allowBlobPublicAccess: {{ $storageAccount.allowBlobPublicAccess | default false }}
   allowCrossTenantReplication: {{ $storageAccount.allowCrossTenantReplication | default false }}
-  allowSharedKeyAccess: {{ $storageAccount.allowSharedKeyAccess | default true }}  
-  defaultToOAuthAuthentication: {{ $storageAccount.defaultToOAuthAuthentication | default false }} 
+  allowSharedKeyAccess: {{ $storageAccount.allowSharedKeyAccess | default false }}
+  defaultToOAuthAuthentication: {{ $storageAccount.defaultToOAuthAuthentication | default true }} 
   dnsEndpointType: {{ $storageAccount.dnsEndpointType | default "Standard" | quote }}
   encryption:
     keySource: Microsoft.Storage
-    requireInfrastructureEncryption: false
+    requireInfrastructureEncryption: true
     services:
       blob:
         enabled: true
@@ -55,11 +55,11 @@ spec:
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-service" (list $ .) }} 
 {{- end }} 
-{{- if $storageAccount.storageAccountsBlobServicesContainers }}  
+{{- if $storageAccount.blobContainers }}  
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-services-container" (list $ .) }} 
 {{- end }} 
-{{- if $storageAccount.storageAccountsTableServicesTables }}  
+{{- if $storageAccount.tables }}  
 ---  
 {{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }} 
 {{- end }} 
