@@ -21,14 +21,14 @@ spec:
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
   kind: StorageV2
   sku:
-    name: {{ $storageAccount.sku.name | default "Standard_LRS" }}
+    name: {{ and $storageAccount.sku $storageAccount.sku.name | default "Standard_LRS" | quote }}
     tier: Standard
   location: {{ $storageAccount.location | default "uksouth" | quote }}
   allowBlobPublicAccess: {{ $storageAccount.allowBlobPublicAccess | default false }}
   allowCrossTenantReplication: {{ $storageAccount.allowCrossTenantReplication | default false }}
   allowSharedKeyAccess: {{ $storageAccount.allowSharedKeyAccess | default false }}
   defaultToOAuthAuthentication: {{ $storageAccount.defaultToOAuthAuthentication | default true }} 
-  dnsEndpointType: {{ $storageAccount.dnsEndpointType | default "Standard" | quote }}
+  dnsEndpointType: "Standard"
   encryption:
     keySource: Microsoft.Storage
     requireInfrastructureEncryption: true
@@ -43,7 +43,23 @@ spec:
   networkAcls:
     bypass: AzureServices
     defaultAction: Allow
-  publicNetworkAccess: Enabled
+    {{- if $storageAccount.ipRules }}
+    ipRules: 
+    {{- range $storageAccount.ipRules }}
+    - action: Allow
+      value: {{ . }}
+    {{- end }} 
+    {{- end }}   
+    {{- if $storageAccount.virtualNetworkRules }}
+    virtualNetworkRules: 
+    {{- range $storageAccount.virtualNetworkRules }}
+    - action: Allow
+      reference:
+        armId: {{ . }}
+      state: Succeeded 
+    {{- end }} 
+    {{- end }}  
+  publicNetworkAccess: {{ $storageAccount.publicNetworkAccess | default "Disabled" }} 
   supportsHttpsTrafficOnly: true
   tags:
   {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
