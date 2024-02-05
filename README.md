@@ -591,7 +591,7 @@ storageAccounts:
 
 ```
 
-##### Example 3 : Create 1 storage account and configure properries for the Storage Account BlobService
+##### Example 3 : Create 1 storage account and configure properties for the Storage Account BlobService
 
 ```
 storageAccounts:
