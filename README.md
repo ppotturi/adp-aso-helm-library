@@ -513,7 +513,7 @@ The following values can optionally be set in the parent chart's `values.yaml` t
 For detailed description of each property [see here](https://learn.microsoft.com/en-us/azure/templates/microsoft.storage/storageaccounts?pivots=deployment-language-bicep)
 
 `owner` property is used to control the ownership of the storage account. The default value is `yes` and you don't need to provide it if you are creating and owning the storage account.
-If you are creating Blob containers or Tables on the existing storage account that you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create Blob containers or Tables on the existing topic.
+If you are creating Blob containers or Tables on the existing storage account that you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create Blob containers or Tables on the existing storage account.
 
 ```
 storageAccounts:
@@ -567,7 +567,7 @@ storageAccounts:
 
 ```
 
-##### Example 2 : Create storage account using large parameter set and storage firewall
+##### Example 2 : Create 1 storage account using large parameter set and storage firewall
 
 ```
 storageAccounts:
@@ -591,7 +591,7 @@ storageAccounts:
 
 ```
 
-##### Example 3 : Create storage account and configure properries for the Storage Account BlobService
+##### Example 3 : Create 1 storage account and configure properries for the Storage Account BlobService
 
 ```
 storageAccounts:
@@ -614,7 +614,7 @@ storageAccounts:
 
 ```
 
-##### Example 4 : Create 2 storage account with 2 blob containers and 1 table with roleassignments
+##### Example 4 : Create 1 storage account with 2 blob containers and 1 table with roleassignments
 
 ```
 storageAccounts4:
@@ -633,7 +633,7 @@ storageAccounts4:
 
 ```
 
-##### Example 5 : Create 1 blob containers and 2 table for the existing storage account in your team.
+##### Example 5 : Create 1 blob containers and 2 tables for the existing storage account in your team.
 
 ```
 storageAccounts4:
