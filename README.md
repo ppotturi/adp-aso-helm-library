@@ -474,7 +474,7 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 
 Note that `storageAccounts` is an array of objects that can be used to create more than one Storage Accounts.
 
-Please note that the storage accont name must be unique across Azure.
+Please note that the storage account name must be unique across Azure.
 
 ```
 storageAccounts:          <Array of Object>
@@ -638,7 +638,7 @@ storageAccounts4:
 ```
 storageAccounts4:
   - name: storage01
-    owner: "No"               --Note owner is set to 'No' to indicate storage account is already exit and own by the different service in the team.
+    owner: "No"               --Note owner is set to 'No' to indicate storage account already exists and is owned by a different service in the team
     blobContainers:  
       - name: container-01
     tables:  
