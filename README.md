@@ -72,14 +72,14 @@ teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserA
 serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
 teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
 
-tags:
-  Environment: <string>
-  ServiceCode: <string>
-  ServiceName: <string>
-  ServiceType: <string> (Shared or Dedicated)
+commonTags:
+  environment: <string>
+  serviceCode: <string>
+  serviceName: <string>
+  serviceType: <string> (Shared or Dedicated)
   kubernetes_cluster: <string>
   kubernetes_namespace: <string>
-  kubernetes_label_ServiceCode: <string>
+  kubernetes_label_serviceCode: <string>
 
 ```
 
@@ -441,8 +441,211 @@ userAssignedIdentity:
                     
 ```
 
-### Storage
-    In Progress
+### Storage Account
+* Template file: `_storage-account.yaml`
+* Template name: `adp-aso-helm-library.storage-account.yaml`
+
+An ASO `StorageAccount` object to create a Microsoft.Storage/storageAccounts resource and optionally sub resources Blob Containers and Tables.
+
+With this template, you can create the below resources.
+  - Storage Accounts
+  - Blob containers and RoleAssignments
+  - Tables and RoleAssignments
+
+A basic usage of this object template would involve the creation of `templates/storage-account.yaml` in the parent Helm chart (e.g. `adp-microservice`) containing:
+
+```
+{{- include "adp-aso-helm-library.storage-account" . -}}
+
+```
+#### Default values for Storage account
+
+Below are the default values used by the the storage account template internally, and they cannot be overridden by the user from the `values.yaml` file.
+
+```
+kind: "StorageV2"             -- The type of storage account will always be "StorageV2"
+dnsEndpointType: "Standard"   -- The type of endpoint
+
+```
+
+#### Required values (Only Storage Account)
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+
+Note that `storageAccounts` is an array of objects that can be used to create more than one Storage Accounts.
+
+Please note that the storage account name must be unique across Azure.
+
+```
+storageAccounts:          <Array of Object>
+  - name: <string>        --Storage account name. Should be Lowercase letters and numbers and Character limit: 3-24.
+  - name: <string>
+```
+
+#### Required values (Storage Account with BlobContainers and Tables)
+
+The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
+
+```
+storageAccounts:                  <Array of Object>
+  - name: <string>                --Storage account name. Should be Lowercase letters and numbers and Character limit: 3-24
+  - name: <string>
+    blobContainers:
+      - name: <string>            --Blob container name
+        roleAssignments:
+          - roleName: <string>    --RoleAssignment Name (Accepted values = "BlobDataContributor")
+      - name: <string>
+        roleAssignments:
+          - roleName: <string>
+    tables: 
+      - name: <string>            --Table name
+        roleAssignments:
+          - roleName: <string>    --RoleAssignment Name (Accepted values = "TableDataContributor")
+      - name: <string>
+        roleAssignments:
+          - roleName: <string>
+```
+
+#### Optional values
+
+The following values can optionally be set in the parent chart's `values.yaml` to set the other properties for `storageAccounts`:
+
+For detailed description of each property [see here](https://learn.microsoft.com/en-us/azure/templates/microsoft.storage/storageaccounts?pivots=deployment-language-bicep)
+
+`owner` property is used to control the ownership of the storage account. The default value is `yes` and you don't need to provide it if you are creating and owning the storage account.
+If you are creating Blob containers or Tables on the existing storage account that you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create Blob containers or Tables on the existing storage account.
+
+```
+storageAccounts:
+  - name: <string>
+    owner: <string>                                     --Default "yes"     (Accepted values = "yes", "no")
+    location: <string>                                  --Default "uksouth"
+    accessTier: <string>                                --Default "Hot"     (Accepted values = "Hot", "Cool")
+    allowBlobPublicAccess: <bool>                       --Default false
+    allowCrossTenantReplication: <bool>                 --Default false
+    allowSharedKeyAccess: <bool>                        --Default false
+    defaultToOAuthAuthentication: <bool>                --Default true
+    minimumTlsVersion: <string>                         --Default "TLS1_2"  (Accepted values = "TLS1_0", "TLS1_1", "TLS1_2")
+    publicNetworkAccess: <bool>                         --Default "Disabled" (Accepted values = "Enabled", "Disabled")
+    sku: <bool>                                         
+      name: Standard_RAGRS                              --Default "Standard_LRS"  (Accepted values = "Standard_LRS", "Standard_RAGRS")
+    ipRules: <array>                                    --Storage Firewall: Sets the IP ACL rules
+    virtualNetworkRules: <array>                        --Storage Firewall: Sets the virtual network rules
+    storageAccountsBlobService:                         --Confugure properties for the blob service
+      changeFeed:                                         --The blob service properties for change feed events
+        enabled: <bool>                                       --Default false
+        retentionInDays: <int>                                --Applies when changeFeed.enabled is set to true
+      containerDeleteRetentionPolicy:                     --The blob service properties for container soft delete
+        enabled: <bool>                                       --Default false 
+        days: <int>                                           --Applies when containerDeleteRetentionPolicy.enabled is set to true         
+      deleteRetentionPolicy:                              --The blob service properties for blob soft delete
+        enabled: <bool>                                       --Default false                          
+        days: <int>                                           --Applies when deleteRetentionPolicy.enabled is set to true 
+        allowPermanentDelete: <bool>                          --Default false 
+      isVersioningEnabled: <bool>                         --Default false. Versioning is enabled if set to true
+      restorePolicy:                                      --The blob service properties for blob restore policy 
+        enabled: <bool>                                       --Default false
+        days: <int>                                           --Applies when restorePolicy.enabled is set to true
+    blobContainers:                                       --List of Blob containers and roleassignments
+      - name: <string>                                        --Blob container name
+        roleAssignments:                                      --List of roleAssignments scope to the blob container
+          - roleName: <string>                                --RoleAssignment Name (Accepted values = "BlobDataContributor")    
+    tables:                                               --List of Tables and roleassignments
+      - name: <string>                                        --Table name
+        roleAssignments:                                      --List of roleAssignments scope to the table
+          - roleName: <string>                                --RoleAssignment Name (Accepted values = "TableDataContributor")
+```
+#### Usage examples
+The following section provides usage examples for the storage account template.
+
+##### Example 1 : Create 2 storage accounts
+
+```
+storageAccounts:
+  - name: storage01
+  - name: storage02
+
+```
+
+##### Example 2 : Create 1 storage account using large parameter set and storage firewall
+
+```
+storageAccounts:
+  - name: storage01
+    accessTier: Hot
+    location: uksouth
+    allowBlobPublicAccess: false
+    allowCrossTenantReplication: false
+    allowSharedKeyAccess: true
+    defaultToOAuthAuthentication: false
+    minimumTlsVersion: TLS1_2
+    ipRules:
+    - 82.13.86.001
+    - 82.13.86.002
+    virtualNetworkRules:
+    - "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.Network/virtualNetworks/<virtualNetworkName>/subnets/<subnetName1>"
+    - "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.Network/virtualNetworks/<virtualNetworkName>/subnets/<subnetName2>"
+    publicNetworkAccess: Enabled
+    sku:
+      name: Standard_RAGRS
+
+```
+
+##### Example 3 : Create 1 storage account and configure properties for the Storage Account BlobService
+
+```
+storageAccounts:
+  - name: storage01
+    storageAccountsBlobService:
+      changeFeed:
+        enabled: true
+        retentionInDays: 14
+      containerDeleteRetentionPolicy:
+        days: 14
+        enabled: true
+      deleteRetentionPolicy:
+        allowPermanentDelete: true
+        days: 20
+        enabled: false
+      isVersioningEnabled: true
+      restorePolicy:
+        enabled: true
+        days: 40
+
+```
+
+##### Example 4 : Create 1 storage account with 2 blob containers and 1 table with roleassignments
+
+```
+storageAccounts4:
+  - name: storage01
+    blobContainers:  
+      - name: container-01
+        roleAssignments:
+          - roleName: 'BlobDataContributor' 
+      - name: container-02
+        roleAssignments:
+          - roleName: 'BlobDataContributor'   
+    tables:  
+      - name: table01  
+        roleAssignments:
+          - roleName: 'TableDataContributor' 
+
+```
+
+##### Example 5 : Create 1 blob containers and 2 tables for the existing storage account in your team.
+
+```
+storageAccounts4:
+  - name: storage01
+    owner: "No"               --Note owner is set to 'No' to indicate storage account already exists and is owned by a different service in the team
+    blobContainers:  
+      - name: container-01
+    tables:  
+      - name: table01  
+      - name: table02
+
+```
 
 
 ## Helper templates

@@ -1,0 +1,27 @@
+{{- define "adp-aso-helm-library.storage-account-blob-services-container" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountObj := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $storageAccountName := $storageAccountObj.name }}
+{{- range $storageAccountsBlobServicesContainer := $storageAccountObj.blobContainers }}
+apiVersion: storage.azure.com/v1api20220901
+kind: StorageAccountsBlobServicesContainer
+metadata:
+  name: {{ include "storageAccountsBlobServicesContainer.fullname" (list $storageAccountName $storageAccountsBlobServicesContainer.name) }}
+  namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
+  {{- with $.Values.asoAnnotations }}
+  annotations: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  azureName: {{ $storageAccountsBlobServicesContainer.name }}
+  publicAccess: {{ $storageAccountsBlobServicesContainer.publicAccess | default "None" }}
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
+--- 
+{{- if $storageAccountsBlobServicesContainer.roleAssignments }}    
+--- 
+{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccountsBlobServicesContainer.roleAssignments $storageAccountName $storageAccountsBlobServicesContainer.name "storageContainer") }}   
+{{- end }} 
+{{- end }}
+{{- end }}
