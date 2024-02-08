@@ -61,6 +61,7 @@ Whilst the Platform orchestration will manage the 'platform' level variables, th
 
 ```
 namespace: <string>                       --namespace name
+fluxConfigNamespace: <string>             --fluxConfig namespace name
 subscriptionId: <string>                  --subscription Id
 serviceBusResourceGroupName: <string>     --Name of the service bus resource group
 serviceBusNamespaceName: <string>         --Name of the environment specific service bus 

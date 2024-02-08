@@ -43,23 +43,27 @@ spec:
   networkAcls:
     bypass: AzureServices
     defaultAction: Allow
-    {{- if $storageAccount.ipRules }}
+    {{- if and $storageAccount.networking $storageAccount.networking.firewallandVirtualNetworks $storageAccount.networking.firewallandVirtualNetworks.ipRules }}
     ipRules: 
-    {{- range $storageAccount.ipRules }}
+    {{- range $storageAccount.networking.firewallandVirtualNetworks.ipRules }}
     - action: Allow
       value: {{ . }}
     {{- end }} 
     {{- end }}   
-    {{- if $storageAccount.virtualNetworkRules }}
+    {{- if and $storageAccount.networking $storageAccount.networking.firewallandVirtualNetworks $storageAccount.networking.firewallandVirtualNetworks.virtualNetworkRules }}
     virtualNetworkRules: 
-    {{- range $storageAccount.virtualNetworkRules }}
+    {{- range $storageAccount.networking.firewallandVirtualNetworks.virtualNetworkRules }}
     - action: Allow
       reference:
         armId: {{ . }}
       state: Succeeded 
     {{- end }} 
     {{- end }}  
-  publicNetworkAccess: {{ $storageAccount.publicNetworkAccess | default "Disabled" }} 
+  {{- if and $storageAccount.networking $storageAccount.networking.publicNetworkAccess }}  
+  publicNetworkAccess: {{ $storageAccount.networking.publicNetworkAccess }} 
+  {{- else }} 
+  publicNetworkAccess: "Disabled"
+  {{- end }} 
   supportsHttpsTrafficOnly: true
   tags:
   {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
@@ -79,7 +83,7 @@ spec:
 ---  
 {{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }} 
 {{- end }} 
-{{- if $storageAccount.networking.privateEndpoints }}  
+{{- if and $storageAccount.networking $storageAccount.networking.privateEndpoints }}  
 ---  
 {{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ .) }} 
 {{- end }} 
