@@ -10,7 +10,7 @@
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
 metadata:
-  name: {{ printf "%s-%s" $.Values.serviceName $storageAccountName }}
+  name: {{ include "storageAccount.metadata.fullname" (list $ $storageAccountName) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
@@ -78,6 +78,10 @@ spec:
 {{- if $storageAccount.tables }}  
 ---  
 {{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }} 
+{{- end }} 
+{{- if $storageAccount.networking.privateEndpoints }}  
+---  
+{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ .) }} 
 {{- end }} 
 {{- end }}
 {{- end }}

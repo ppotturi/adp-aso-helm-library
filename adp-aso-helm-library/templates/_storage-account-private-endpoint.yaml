@@ -1,0 +1,68 @@
+{{- define "adp-aso-helm-library.storage-account-private-endpoint" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountObj := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }} 
+{{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") $.Values.teamResourceGroupName }}
+{{- range $privateEndpoint := $storageAccountObj.networking.privateEndpoints }}
+{{- $privateEndpointName :=  required (printf $requiredMsg "privateEndpoint[].name") $privateEndpoint.name }}
+{{- $privateEndpointSubResource :=  required (printf $requiredMsg "privateEndpoint[].subResource") $privateEndpoint.subResource }}
+{{- $privateEndpointVnetRGName :=  required (printf $requiredMsg "privateEndpoint[].vnetRGName") $privateEndpoint.vnetRGName }}
+{{- $privateEndpointVNetName := required (printf $requiredMsg "privateEndpoint[].vnetName") $privateEndpoint.vnetName }}
+{{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpoint[].subnetName") $privateEndpoint.subnetName }}
+{{- $privateDnsZoneDnsSubscriptionId := required (printf $requiredMsg "privateEndpoint[].privateDnsZone.dnsSubscriptionId") $privateEndpoint.privateDnsZone.dnsSubscriptionId }}
+{{- $privateDnsZoneDnsRGName := required (printf $requiredMsg "privateEndpoint[].privateDnsZone.dnsRGName") $privateEndpoint.privateDnsZone.dnsRGName }}
+apiVersion: network.azure.com/v1api20220701
+kind: PrivateEndpoint
+metadata:
+  name: {{ include "privateEndpoint.metadata.fullname" (list $ $privateEndpointName) }}
+  namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  {{- with $.Values.asoAnnotations }}
+  annotations: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  azureName: {{ $privateEndpointName }}
+  customNetworkInterfaceName: {{ printf "%s-nic" $privateEndpointName }}
+  location: {{ $storageAccountObj.location | default "uksouth" | quote }}
+  privateLinkServiceConnections:
+  - groupIds:
+    - {{ $privateEndpointSubResource }}
+    name: {{ $privateEndpointName }}
+    privateLinkServiceConnectionState:
+      actionsRequired: None
+      description: Auto-Approved
+      status: Approved
+    privateLinkServiceReference:
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $subscriptionId $teamRGName $storageAccountObj.name }} 
+  subnet:
+    reference:
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s" $subscriptionId $privateEndpointVnetRGName $privateEndpointVNetName $privateEndpointSubnetName }} 
+  tags:
+    {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}     
+---
+apiVersion: network.azure.com/v1api20220701
+kind: PrivateEndpointsPrivateDnsZoneGroup
+metadata:
+  name: {{ printf "%s-default" (include "privateEndpoint.metadata.fullname" (list $ $privateEndpointName)) }}
+  namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+spec:
+  azureName: default
+  owner:
+    name: {{ include "privateEndpoint.metadata.fullname" (list $ $privateEndpointName) }}
+  privateDnsZoneConfigs:
+  {{- if eq $privateEndpointSubResource "blob"}}
+  - name: privatelink-blob-core-windows-net
+    privateDnsZoneReference:
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $privateDnsZoneDnsSubscriptionId $privateDnsZoneDnsRGName "privatelink.blob.core.windows.net" }}
+  {{- end }}   
+  {{- if eq $privateEndpointSubResource "table"}}
+  - name: privatelink-table-core-windows-net
+    privateDnsZoneReference:
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $privateDnsZoneDnsSubscriptionId $privateDnsZoneDnsRGName "privatelink.table.core.windows.net" }}
+  {{- end }}     
+---
+{{- end }} 
+{{- end }} 

@@ -6,7 +6,7 @@
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsBlobService
 metadata:
-  name: {{ include "storageaccountsService.defaultName" (list $storageAccountName) }}
+  name: {{ include "storageaccountsService.metadata.defaultName" (list $ $storageAccountName) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
