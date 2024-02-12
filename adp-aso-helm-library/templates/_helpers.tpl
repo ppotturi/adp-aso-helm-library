@@ -174,14 +174,45 @@ Storage account Table metadata FullName
 {{- end }}
 
 {{/*
-Storage account metadata FullName
+PrivateEndpoint Name.
 */}}
-{{- define "privateEndpoint.metadata.fullname" -}}
+{{- define "privateEndpoint.name" -}}
 {{- $ := index . 0 }}
-{{- $privateEndpointName := index . 1 }}
-{{- if $.Values.serviceName }}
-{{- (printf "%s-%s" $.Values.serviceName $privateEndpointName) | lower }}
+{{- $ncResource := index . 1 }}
+{{- $subResource := index . 2 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $privateEndpointPrefix := (required (printf $requiredMsg "privateEndpointPrefix") $.Values.privateEndpointPrefix) }}
+{{- if $privateEndpointPrefix }}
+{{- (printf "%s-%s-%s" $privateEndpointPrefix $ncResource $subResource) | lower }}
 {{- else }}
 {{- printf "this-condition-is-required-for-linting" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Private DNS Zone Id. This feature is not used currently. Need to revisit after discussion with the ADP team.
+feature flag: createPrivateEndpointsPrivateDnsZoneGroup: false
+*/}}
+{{- define "privateDNSZone.resourceId" -}}
+{{- $ := index . 0 }}
+{{- $env := index . 1 }}
+{{- $privateDnsZoneName := index . 2 }}
+{{- $location := index . 3 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $azrMSTPrivateLinkDNSSubscriptionID := (required (printf $requiredMsg "azrMSTPrivateLinkDNSSubscriptionID") $.Values.azrMSTPrivateLinkDNSSubscriptionID) }}
+{{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKSouthResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKSouthResourceGroupName) }}
+{{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKWestResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKWestResourceGroupName) }}
+{{- if eq $env "snd" }}
+{{- $defraDevDNSSubscriptionId := (required (printf $requiredMsg "defraDevDNSSubscriptionId") $.Values.defraDevDNSSubscriptionId) }}
+{{- $defraDevDNSResourceGroupName := (required (printf $requiredMsg "defraDevDNSResourceGroupName") $.Values.defraDevDNSResourceGroupName) }}
+{{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $defraDevDNSSubscriptionId $defraDevDNSResourceGroupName $privateDnsZoneName }}
+{{- else }}
+{{- if eq $location "uksouth" }}
+{{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKSouthResourceGroupName $privateDnsZoneName }}
+{{- else if eq $location "ukwest" }}
+{{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKWestResourceGroupName $privateDnsZoneName }}
+{{- else}}
+{{- fail (printf "Value for location is not as expected. '%s' is not in the allowed location." $location) }}
+{{- end }}
 {{- end }}
 {{- end }}

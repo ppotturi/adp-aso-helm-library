@@ -1,26 +1,23 @@
 {{- define "adp-aso-helm-library.storage-account-private-endpoint" -}}
 {{- $ := index . 0 }}
 {{- $storageAccountObj := index . 1 }}
+{{- $ncResource := index . 2 }}
+{{- $privateEndpointSubResource := index . 3 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }} 
 {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") $.Values.teamResourceGroupName }}
-{{- range $privateEndpoint := $storageAccountObj.networking.privateEndpoints }}
-{{- $privateEndpointName :=  required (printf $requiredMsg "privateEndpoint[].name") $privateEndpoint.name }}
-{{- $privateEndpointSubResource :=  required (printf $requiredMsg "privateEndpoint[].subResource") $privateEndpoint.subResource }}
-{{- $privateEndpointVnetRGName :=  required (printf $requiredMsg "privateEndpoint[].vnetRGName") $privateEndpoint.vnetRGName }}
-{{- $privateEndpointVNetName := required (printf $requiredMsg "privateEndpoint[].vnetName") $privateEndpoint.vnetName }}
-{{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpoint[].subnetName") $privateEndpoint.subnetName }}
-{{- $privateDnsZoneDnsSubscriptionId := required (printf $requiredMsg "privateEndpoint[].privateDnsZone.dnsSubscriptionId") $privateEndpoint.privateDnsZone.dnsSubscriptionId }}
-{{- $privateDnsZoneDnsRGName := required (printf $requiredMsg "privateEndpoint[].privateDnsZone.dnsRGName") $privateEndpoint.privateDnsZone.dnsRGName }}
+{{- $privateEndpointName :=  include "privateEndpoint.name" (list $ $ncResource $privateEndpointSubResource) }}
+{{- $privateEndpointVnetRGName :=  required (printf $requiredMsg "virtualNetworkResourceGroupName") $.Values.virtualNetworkResourceGroupName }}
+{{- $privateEndpointVNetName := required (printf $requiredMsg "virtualNetworkName") $.Values.virtualNetworkName }}
+{{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
+{{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpoint
 metadata:
-  name: {{ include "privateEndpoint.metadata.fullname" (list $ $privateEndpointName) }}
-  namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
-  {{- with $.Values.asoAnnotations }}
+  name: {{ $privateEndpointName }}
+  namespace: {{ $fluxConfigNamespace }}
   annotations: 
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    serviceoperator.azure.com/reconcile-policy: detach-on-delete
 spec:
   azureName: {{ $privateEndpointName }}
   customNetworkInterfaceName: {{ printf "%s-nic" $privateEndpointName }}
@@ -43,26 +40,28 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}     
 ---
+{{- if $.Values.createPrivateEndpointsPrivateDnsZoneGroup }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpointsPrivateDnsZoneGroup
 metadata:
-  name: {{ printf "%s-default" (include "privateEndpoint.metadata.fullname" (list $ $privateEndpointName)) }}
+  name: {{ printf "%s-default" $privateEndpointName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  annotations: 
+    serviceoperator.azure.com/reconcile-policy: detach-on-delete
 spec:
   azureName: default
   owner:
-    name: {{ include "privateEndpoint.metadata.fullname" (list $ $privateEndpointName) }}
+    name: {{ $privateEndpointName }}
   privateDnsZoneConfigs:
   {{- if eq $privateEndpointSubResource "blob"}}
   - name: privatelink-blob-core-windows-net
     privateDnsZoneReference:
-      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $privateDnsZoneDnsSubscriptionId $privateDnsZoneDnsRGName "privatelink.blob.core.windows.net" }}
+      armId: {{ include "privateDNSZone.resourceId" (list $ ($.Values.Environment | default "snd") "privatelink.blob.core.windows.net" ($storageAccountObj.location | default "uksouth")) }}
   {{- end }}   
   {{- if eq $privateEndpointSubResource "table"}}
   - name: privatelink-table-core-windows-net
     privateDnsZoneReference:
-      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $privateDnsZoneDnsSubscriptionId $privateDnsZoneDnsRGName "privatelink.table.core.windows.net" }}
+      armId: {{ include "privateDNSZone.resourceId" (list $ ($.Values.Environment | default "snd") "privatelink.table.core.windows.net" ($storageAccountObj.location | default "uksouth")) }}
   {{- end }}     
----
-{{- end }} 
+{{- end }}   
 {{- end }} 

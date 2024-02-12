@@ -43,24 +43,15 @@ spec:
   networkAcls:
     bypass: AzureServices
     defaultAction: Allow
-    {{- if and $storageAccount.networking $storageAccount.networking.firewallandVirtualNetworks $storageAccount.networking.firewallandVirtualNetworks.ipRules }}
+    {{- if and $storageAccount.networkAcls $storageAccount.networkAcls.ipRules }}
     ipRules: 
-    {{- range $storageAccount.networking.firewallandVirtualNetworks.ipRules }}
+    {{- range $storageAccount.networkAcls.ipRules }}
     - action: Allow
       value: {{ . }}
     {{- end }} 
-    {{- end }}   
-    {{- if and $storageAccount.networking $storageAccount.networking.firewallandVirtualNetworks $storageAccount.networking.firewallandVirtualNetworks.virtualNetworkRules }}
-    virtualNetworkRules: 
-    {{- range $storageAccount.networking.firewallandVirtualNetworks.virtualNetworkRules }}
-    - action: Allow
-      reference:
-        armId: {{ . }}
-      state: Succeeded 
-    {{- end }} 
-    {{- end }}  
-  {{- if and $storageAccount.networking $storageAccount.networking.publicNetworkAccess }}  
-  publicNetworkAccess: {{ $storageAccount.networking.publicNetworkAccess }} 
+    {{- end }}    
+  {{- if and $storageAccount.networkAcls $storageAccount.networkAcls.ipRules }}  
+  publicNetworkAccess: "Enabled" 
   {{- else }} 
   publicNetworkAccess: "Disabled"
   {{- end }} 
@@ -70,6 +61,9 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}  
 ---
+{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccount.name "blob") }} 
+---
+{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccount.name "table") }}
 {{- end }} 
 {{- if $storageAccount.storageAccountsBlobService }}  
 ---  
@@ -81,11 +75,7 @@ spec:
 {{- end }} 
 {{- if $storageAccount.tables }}  
 ---  
-{{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }} 
-{{- end }} 
-{{- if and $storageAccount.networking $storageAccount.networking.privateEndpoints }}  
----  
-{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ .) }} 
+{{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }}  
 {{- end }} 
 {{- end }}
 {{- end }}
