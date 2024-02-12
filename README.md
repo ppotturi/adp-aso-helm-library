@@ -76,10 +76,10 @@ virtualNetworkResourceGroupName: <string>               --Virtual Network resour
 virtualNetworkName: <string>                            --Virtual Network name
 privateEndpointSubnetName: <string>                     --The name of the subnet for the service's private endpoint
 privateEndpointPrefix: <string>                         --The prefix used for the private endpoint resource name
-azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. Need a discussion
-azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. Need a discussion
-createPrivateEndpointsPrivateDnsZoneGroup: <string>     --NOT USED. Need a discussion
-Environment: <string>                                   --NOT USED. Need a discussion  
+azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. We need to discuss this further
+azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. We need to discuss this further
+createPrivateEndpointsPrivateDnsZoneGroup: <string>     --NOT USED. We need to discuss this further
+Environment: <string>                                   --NOT USED. We need to discuss this further
 azrMSTPrivateLinkDNSSubscriptionID: <string>            --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
                                                           resource,  which adds an A record in the DNS zone.
 
@@ -657,7 +657,38 @@ storageAccounts4:
       - name: table02
 
 ```
+### **Reference Table for Resource Names in Azure and Kubernetes**
 
+The table below shows the Azure Service Operator (ASO) resource naming convention in Azure and Kubernetes: 
+
+In the example below, the following values are used for demonstration purposes: 
+- TeamNamespaceName = 'ffc-demo'
+- Service-Name = 'ffc-demo-web'
+- MIPrefix = 'sndadpinfmi1401'
+- ManageIdName = 'sndadpinfmi1401-ffc-demo-web'
+- PENamePrefix = 'sndadpinfpe1401'
+- QueueName = 'queue01'
+- TopicName = 'topic01'
+- TopicSubName = 'topicSub01'
+- PostgresServerName = 'sndadpdbsps1401'
+- DatabaseName = 'claim'
+- StorageAccountName = 'sndxyzinfst1401'
+
+| Resource Type | Resource Name Format in `Azure` | Resource Name Example in `Azure` | Resource Name Format in `Kubernetes` | Resource Name Example in `Kubernetes`
+| -------- | ------------------ | -------- | ------------------ |------------------ |
+| NamespacesQueue | {TeamNamespaceName}-{QueueName} | ffc-demo-queue01 |	{TeamNamespaceName}-{QueueName} | ffc-demo-queue01 |
+| Queue RoleAssignment | NA | NA |	{ManageIdName}-{QueueName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-queue01-queuereceiver-rbac-0 |
+| NamespacesTopic | {TeamNamespaceName}-{TopicName} | ffc-demo-topic01 |	{TeamNamespaceName}-{TopicName} | ffc-demo-topic01 |
+| NamespacesTopicsSubscription | {TopicSubName} | topicSub01 |	{TeamNamespaceName}-{TopicName}-{TopicSubName}-subscription | ffc-demo-topic01-topicsub01-subscription |
+| Topic RoleAssignment | NA | NA |	{ManageIdName}-{TopicName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-topic01-topicreceiver-rbac-0 |
+| Postgres Database | {TeamNamespaceName}-{DatabaseName} | ffc-demo-claim | {PostgresServerName}-{TeamNamespaceName}-{DatabaseName} | sndadpdbsps1401-ffc-demo-claim |
+| Manage Idenitty | {MIPrefix}-{Service-Name} | sndadpinfmi1401-ffc-demo-web |	{MIPrefix}-{Service-Name} | sndadpinfmi1401-ffc-demo-web |
+| StorageAccount | {StorageAccountName} | sndxyzinfst1401 |	{Service-Name}-{StorageAccountName} | ffc-demo-web-sndxyzinfst1401 |
+| StorageAccountsBlobService | default | default |	{Service-Name}-{StorageAccountName}-default | ffc-demo-web-sndxyzinfst1401-default |
+| StorageAccountsBlobServicesContainer | {ContainerName} | container-01 |	{Service-Name}-{StorageAccountName}-default-{ContainerName} | ffc-demo-web-sndxyzinfst1401-default-container-01 |
+| StorageAccountsTableServicesTable | {TableName} | table01 |	{Service-Name}-{StorageAccountName}-default-{TableName} | ffc-demo-web-sndxyzinfst1401-default-table01 |
+| PrivateEndpoint | {PENamePrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndxyzinfst1401-blob | {PENamePrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndxyzinfst1401-blob |
+| PrivateEndpointsPrivateDnsZoneGroup | default | default |	{PrivateEndpointName}-default | sndadpinfpe1401-sndxyzinfst1401-blob-default |
 
 ## Helper templates
 
