@@ -60,18 +60,29 @@ for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` name
 Whilst the Platform orchestration will manage the 'platform' level variables, they can be optionally supplied in some circumstances. Examples include in sandpit/development when testing against team-specific infrastructure (that isn't Platform shared). So, if you have a dedicated Service Bus or Database Server instance, you can point to those to ensure you apps works as expected. Otherwise, don't supply the Platform level variables as these will be automatically managed and orchestrated throughout all the environments appropriately against core shared infrastructure. You (as a Platform Tenant) just supply your team-specific/instance specific infrastructure config' (i.e. Queues, Storage Accounts, Databases).
 
 ```
-namespace: <string>                       --namespace name
-fluxConfigNamespace: <string>             --fluxConfig namespace name
-subscriptionId: <string>                  --subscription Id
-serviceBusResourceGroupName: <string>     --Name of the service bus resource group
-serviceBusNamespaceName: <string>         --Name of the environment specific service bus 
-postgresResourceGroupName: <string>       --Name of the Postgres server resource group
-postgresServerName: <string>              --Name of the environment specific postgres server
-keyVaultResourceGroupName: <string>       --Name of the keyvault resource group
-keyVaultName: <string>                    --Name of the environment specific keyVaultName
-teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserAssignedIdentity resource name
-serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
-teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
+namespace: <string>                                     --namespace name
+fluxConfigNamespace: <string>                           --fluxConfig namespace name
+subscriptionId: <string>                                --subscription Id
+serviceBusResourceGroupName: <string>                   --Name of the service bus resource group
+serviceBusNamespaceName: <string>                       --Name of the environment specific service bus 
+postgresResourceGroupName: <string>                     --Name of the Postgres server resource group
+postgresServerName: <string>                            --Name of the environment specific postgres server
+keyVaultResourceGroupName: <string>                     --Name of the keyvault resource group
+keyVaultName: <string>                                  --Name of the environment specific keyVaultName
+teamMIPrefix: <string>                                  --The prefix used for the ManageIdentity/UserAssignedIdentity resource name
+serviceName: <string>                                   --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
+teamResourceGroupName: <string>                         --Team ResourceGroup Name where team resources are created
+virtualNetworkResourceGroupName: <string>               --Virtual Network resource group
+virtualNetworkName: <string>                            --Virtual Network name
+privateEndpointSubnetName: <string>                     --The name of the subnet for the service's private endpoint
+privateEndpointPrefix: <string>                         --The prefix used for the private endpoint resource name
+azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. Need a discussion
+azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. Need a discussion
+createPrivateEndpointsPrivateDnsZoneGroup: <string>     --NOT USED. Need a discussion
+Environment: <string>                                   --NOT USED. Need a discussion  
+azrMSTPrivateLinkDNSSubscriptionID: <string>            --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
+                                                          resource,  which adds an A record in the DNS zone.
+
 
 commonTags:
   environment: <string>
@@ -448,6 +459,9 @@ userAssignedIdentity:
 
 An ASO `StorageAccount` object to create a Microsoft.Storage/storageAccounts resource and optionally sub resources Blob Containers and Tables.
 
+| :memo: By default, private endpoints are always enabled on storage accounts and `publicNetworkAccess` is disabled. Optionally, you can also configure `ipRules` in scenarios where you want to limit access to your storage account to requests originating from specified IP addresses.  |
+|:----------|
+
 With this template, you can create the below resources.
   - Storage Accounts
   - Blob containers and RoleAssignments
@@ -479,7 +493,7 @@ Please note that the storage account name must be unique across Azure.
 
 ```
 storageAccounts:          <Array of Object>
-  - name: <string>        --Storage account name. Should be Lowercase letters and numbers and Character limit: 3-24.
+  - name: <string>        --Storage account name. Name should be Lowercase letters and numbers and Character limit: 3-24.
   - name: <string>
 ```
 
@@ -489,17 +503,17 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 
 ```
 storageAccounts:                  <Array of Object>
-  - name: <string>                --Storage account name. Should be Lowercase letters and numbers and Character limit: 3-24
+  - name: <string>                --Storage account name. Name should be lowercase letters and numbers and Character limit: 3-24
   - name: <string>
     blobContainers:
-      - name: <string>            --Blob container name
+      - name: <string>            --Blob container name. Name should be lowercase and can contain only letters, numbers, and the hyphen/minus (-) character. Character limit: 3-63
         roleAssignments:
           - roleName: <string>    --RoleAssignment Name (Accepted values = "BlobDataContributor")
       - name: <string>
         roleAssignments:
           - roleName: <string>
     tables: 
-      - name: <string>            --Table name
+      - name: <string>            --Table name. Name should be lowercase and may contain only alphanumeric characters. and Character limit: 3-63
         roleAssignments:
           - roleName: <string>    --RoleAssignment Name (Accepted values = "TableDataContributor")
       - name: <string>
@@ -527,11 +541,10 @@ storageAccounts:
     allowSharedKeyAccess: <bool>                        --Default false
     defaultToOAuthAuthentication: <bool>                --Default true
     minimumTlsVersion: <string>                         --Default "TLS1_2"  (Accepted values = "TLS1_0", "TLS1_1", "TLS1_2")
-    publicNetworkAccess: <bool>                         --Default "Disabled" (Accepted values = "Enabled", "Disabled")
     sku: <bool>                                         
       name: Standard_RAGRS                              --Default "Standard_LRS"  (Accepted values = "Standard_LRS", "Standard_RAGRS")
-    ipRules: <array>                                    --Storage Firewall: Sets the IP ACL rules
-    virtualNetworkRules: <array>                        --Storage Firewall: Sets the virtual network rules
+    networkAcls:
+      ipRules: <array>                                    --Storage Firewall: Sets the IP ACL rules
     storageAccountsBlobService:                         --Confugure properties for the blob service
       changeFeed:                                         --The blob service properties for change feed events
         enabled: <bool>                                       --Default false
@@ -580,13 +593,10 @@ storageAccounts:
     allowSharedKeyAccess: true
     defaultToOAuthAuthentication: false
     minimumTlsVersion: TLS1_2
-    ipRules:
-    - 82.13.86.001
-    - 82.13.86.002
-    virtualNetworkRules:
-    - "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.Network/virtualNetworks/<virtualNetworkName>/subnets/<subnetName1>"
-    - "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.Network/virtualNetworks/<virtualNetworkName>/subnets/<subnetName2>"
-    publicNetworkAccess: Enabled
+    networkAcls:
+      ipRules:
+      - 82.13.86.001
+      - 82.13.86.002
     sku:
       name: Standard_RAGRS
 
