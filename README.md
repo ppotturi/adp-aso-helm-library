@@ -79,7 +79,7 @@ privateEndpointPrefix: <string>                         --The prefix used for th
 azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. We need to discuss this further
 azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. We need to discuss this further
 azrMSTPrivateLinkDNSSubscriptionID: <string>            --NOT USED. We need to discuss this further
-createPrivateEndpointsPrivateDnsZoneGroup: <string>     --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
+createPrivateEndpointsPrivateDnsZoneGroup: <bool>       --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
                                                           resource,  which adds an A record in the DNS zone.
 
 
