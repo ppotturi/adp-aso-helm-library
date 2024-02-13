@@ -78,9 +78,8 @@ privateEndpointSubnetName: <string>                     --The name of the subnet
 privateEndpointPrefix: <string>                         --The prefix used for the private endpoint resource name
 azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. We need to discuss this further
 azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. We need to discuss this further
-createPrivateEndpointsPrivateDnsZoneGroup: <string>     --NOT USED. We need to discuss this further
-Environment: <string>                                   --NOT USED. We need to discuss this further
-azrMSTPrivateLinkDNSSubscriptionID: <string>            --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
+azrMSTPrivateLinkDNSSubscriptionID: <string>            --NOT USED. We need to discuss this further
+createPrivateEndpointsPrivateDnsZoneGroup: <string>     --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
                                                           resource,  which adds an A record in the DNS zone.
 
 
