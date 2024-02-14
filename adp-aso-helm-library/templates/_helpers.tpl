@@ -82,6 +82,10 @@ roleDefinitionId for the roleAssignment
 {{- printf (include "builtInRole.storageTableDataContributorId" .) }}
 {{- else if eq $roleName "blobdatacontributor" }}
 {{- printf (include "builtInRole.storageBlobDataContributorId" .) }}
+{{- else if eq $roleName "tabledatareader" }}
+{{- printf (include "builtInRole.storageTableDataReaderId" .) }}
+{{- else if eq $roleName "blobdatareader" }}
+{{- printf (include "builtInRole.storageBlobDataReaderId" .) }}
 {{- else }}
 {{- fail (printf "Value for roleName is not as expected. '%s' role is not in the allowed roles." $roleName) }}
 {{- end }}

@@ -479,7 +479,10 @@ Below are the default values used by the the storage account template internally
 ```
 kind: "StorageV2"             -- The type of storage account will always be "StorageV2"
 dnsEndpointType: "Standard"   -- The type of endpoint
-
+minimumTlsVersion: "TLS1_2"
+allowBlobPublicAccess: "false"
+sku: "Standard_LRS"           -- This is the sku for Sandpit environments (snd1, snd2, snd3)
+sku: "Standard_RAGRS"         -- This is the sku for production environments (dev, test, pre, prd)
 ```
 
 #### Required values (Only Storage Account)
@@ -507,14 +510,14 @@ storageAccounts:                  <Array of Object>
     blobContainers:
       - name: <string>            --Blob container name. Name should be lowercase and can contain only letters, numbers, and the hyphen/minus (-) character. Character limit: 3-63
         roleAssignments:
-          - roleName: <string>    --RoleAssignment Name (Accepted values = "BlobDataContributor")
+          - roleName: <string>    --RoleAssignment Name (Accepted values = "BlobDataContributor", "BlobDataReader")
       - name: <string>
         roleAssignments:
           - roleName: <string>
     tables: 
       - name: <string>            --Table name. Name should be lowercase and may contain only alphanumeric characters. and Character limit: 3-63
         roleAssignments:
-          - roleName: <string>    --RoleAssignment Name (Accepted values = "TableDataContributor")
+          - roleName: <string>    --RoleAssignment Name (Accepted values = "TableDataContributor", "TableDataReader")
       - name: <string>
         roleAssignments:
           - roleName: <string>
@@ -535,13 +538,9 @@ storageAccounts:
     owner: <string>                                     --Default "yes"     (Accepted values = "yes", "no")
     location: <string>                                  --Default "uksouth"
     accessTier: <string>                                --Default "Hot"     (Accepted values = "Hot", "Cool")
-    allowBlobPublicAccess: <bool>                       --Default false
     allowCrossTenantReplication: <bool>                 --Default false
     allowSharedKeyAccess: <bool>                        --Default false
-    defaultToOAuthAuthentication: <bool>                --Default true
-    minimumTlsVersion: <string>                         --Default "TLS1_2"  (Accepted values = "TLS1_0", "TLS1_1", "TLS1_2")
-    sku: <bool>                                         
-      name: Standard_RAGRS                              --Default "Standard_LRS"  (Accepted values = "Standard_LRS", "Standard_RAGRS")
+    defaultToOAuthAuthentication: <string>              --Default true    (Accepted values = "true", "false")
     networkAcls:
       ipRules: <array>                                    --Storage Firewall: Sets the IP ACL rules
     storageAccountsBlobService:                         --Confugure properties for the blob service
@@ -549,11 +548,11 @@ storageAccounts:
         enabled: <bool>                                       --Default false
         retentionInDays: <int>                                --Applies when changeFeed.enabled is set to true
       containerDeleteRetentionPolicy:                     --The blob service properties for container soft delete
-        enabled: <bool>                                       --Default false 
-        days: <int>                                           --Applies when containerDeleteRetentionPolicy.enabled is set to true         
+        enabled: <bool>                                       --Default true  
+        days: <int>                                           --Applies when containerDeleteRetentionPolicy.enabled is set to true. Default is 7 days       
       deleteRetentionPolicy:                              --The blob service properties for blob soft delete
-        enabled: <bool>                                       --Default false                          
-        days: <int>                                           --Applies when deleteRetentionPolicy.enabled is set to true 
+        enabled: <bool>                                       --Default true                          
+        days: <int>                                           --Applies when deleteRetentionPolicy.enabled is set to true. Default is 7 days
         allowPermanentDelete: <bool>                          --Default false 
       isVersioningEnabled: <bool>                         --Default false. Versioning is enabled if set to true
       restorePolicy:                                      --The blob service properties for blob restore policy 
@@ -562,11 +561,11 @@ storageAccounts:
     blobContainers:                                       --List of Blob containers and roleassignments
       - name: <string>                                        --Blob container name
         roleAssignments:                                      --List of roleAssignments scope to the blob container
-          - roleName: <string>                                --RoleAssignment Name (Accepted values = "BlobDataContributor")    
+          - roleName: <string>                                --RoleAssignment Name (Accepted values = "BlobDataContributor", "BlobDataReader")    
     tables:                                               --List of Tables and roleassignments
       - name: <string>                                        --Table name
         roleAssignments:                                      --List of roleAssignments scope to the table
-          - roleName: <string>                                --RoleAssignment Name (Accepted values = "TableDataContributor")
+          - roleName: <string>                                --RoleAssignment Name (Accepted values = "TableDataContributor", "TableDataReader")
 ```
 #### Usage examples
 The following section provides usage examples for the storage account template.
@@ -587,18 +586,13 @@ storageAccounts:
   - name: storage01
     accessTier: Hot
     location: uksouth
-    allowBlobPublicAccess: false
     allowCrossTenantReplication: false
     allowSharedKeyAccess: true
-    defaultToOAuthAuthentication: false
-    minimumTlsVersion: TLS1_2
+    defaultToOAuthAuthentication: "false"
     networkAcls:
       ipRules:
       - 82.13.86.001
       - 82.13.86.002
-    sku:
-      name: Standard_RAGRS
-
 ```
 
 ##### Example 3 : Create 1 storage account and configure properties for the Storage Account BlobService
@@ -635,7 +629,7 @@ storageAccounts4:
           - roleName: 'BlobDataContributor' 
       - name: container-02
         roleAssignments:
-          - roleName: 'BlobDataContributor'   
+          - roleName: 'BlobDataReader'   
     tables:  
       - name: table01  
         roleAssignments:
