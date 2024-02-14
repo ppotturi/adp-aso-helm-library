@@ -202,17 +202,11 @@ feature flag: createPrivateEndpointsPrivateDnsZoneGroup: false
 {{- $azrMSTPrivateLinkDNSSubscriptionID := (required (printf $requiredMsg "azrMSTPrivateLinkDNSSubscriptionID") $.Values.azrMSTPrivateLinkDNSSubscriptionID) }}
 {{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKSouthResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKSouthResourceGroupName) }}
 {{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKWestResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKWestResourceGroupName) }}
-{{- if eq $env "snd" }}
-{{- $defraDevDNSSubscriptionId := (required (printf $requiredMsg "defraDevDNSSubscriptionId") $.Values.defraDevDNSSubscriptionId) }}
-{{- $defraDevDNSResourceGroupName := (required (printf $requiredMsg "defraDevDNSResourceGroupName") $.Values.defraDevDNSResourceGroupName) }}
-{{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $defraDevDNSSubscriptionId $defraDevDNSResourceGroupName $privateDnsZoneName }}
-{{- else }}
 {{- if eq $location "uksouth" }}
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKSouthResourceGroupName $privateDnsZoneName }}
 {{- else if eq $location "ukwest" }}
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKWestResourceGroupName $privateDnsZoneName }}
 {{- else}}
 {{- fail (printf "Value for location is not as expected. '%s' is not in the allowed location." $location) }}
-{{- end }}
 {{- end }}
 {{- end }}
