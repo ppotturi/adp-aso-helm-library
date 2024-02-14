@@ -72,6 +72,7 @@ spec:
 {{- end }} 
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-service" (list $ .) }} 
+--- 
 {{- if $storageAccount.blobContainers }}  
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-services-container" (list $ .) }} 

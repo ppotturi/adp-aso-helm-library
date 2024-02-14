@@ -61,6 +61,7 @@ Whilst the Platform orchestration will manage the 'platform' level variables, th
 
 ```
 namespace: <string>                                     --namespace name
+environment: <string>                                   --environment name
 fluxConfigNamespace: <string>                           --fluxConfig namespace name
 subscriptionId: <string>                                --subscription Id
 serviceBusResourceGroupName: <string>                   --Name of the service bus resource group
@@ -79,8 +80,6 @@ privateEndpointPrefix: <string>                         --The prefix used for th
 azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. We need to discuss this further
 azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. We need to discuss this further
 azrMSTPrivateLinkDNSSubscriptionID: <string>            --NOT USED. We need to discuss this further
-createPrivateEndpointsPrivateDnsZoneGroup: <bool>       --The FEATURE FLAG to create a 'PrivateEndpointsPrivateDnsZoneGroup' 
-                                                          resource,  which adds an A record in the DNS zone.
 
 
 commonTags:
@@ -458,7 +457,10 @@ userAssignedIdentity:
 
 An ASO `StorageAccount` object to create a Microsoft.Storage/storageAccounts resource and optionally sub resources Blob Containers and Tables.
 
-| :memo: By default, private endpoints are always enabled on storage accounts and `publicNetworkAccess` is disabled. Optionally, you can also configure `ipRules` in scenarios where you want to limit access to your storage account to requests originating from specified IP addresses.  |
+| :memo: By default, private endpoints are always enabled on storage accounts and `publicNetworkAccess` is disabled. Optionally, you can also configure `ipRules` in scenarios where you want to limit access to your storage account to requests originating from specified IP addresses. |
+|:----------|
+
+| :memo: Please be aware that this template only includes A records in the central DNS zone for the Dev, Tst, Pre, and Prd environments. For Sandpit environments snd1, snd2, and snd3, it currently only generates a private endpoint without adding an A record to the DNS zone. You will need to separately add this entry via PowerShell script. |
 |:----------|
 
 With this template, you can create the below resources.
@@ -621,7 +623,7 @@ storageAccounts:
 ##### Example 4 : Create 1 storage account with 2 blob containers and 1 table with roleassignments
 
 ```
-storageAccounts4:
+storageAccounts:
   - name: storage01
     blobContainers:  
       - name: container-01
@@ -640,7 +642,7 @@ storageAccounts4:
 ##### Example 5 : Create 1 blob containers and 2 tables for the existing storage account in your team.
 
 ```
-storageAccounts4:
+storageAccounts:
   - name: storage01
     owner: "No"               --Note owner is set to 'No' to indicate storage account already exists and is owned by a different service in the team
     blobContainers:  
