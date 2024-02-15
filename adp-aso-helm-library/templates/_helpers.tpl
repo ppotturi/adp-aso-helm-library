@@ -194,8 +194,7 @@ PrivateEndpoint Name.
 {{- end }}
 
 {{/*
-Private DNS Zone Id. This feature is not used currently. Need to revisit after discussion with the ADP team.
-feature flag: createPrivateEndpointsPrivateDnsZoneGroup: false
+Get the Private DNS Zone Id.
 */}}
 {{- define "privateDNSZone.resourceId" -}}
 {{- $ := index . 0 }}

@@ -4,7 +4,7 @@
 {{- $ncResource := index . 2 }}
 {{- $privateEndpointSubResource := index . 3 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $environment := required (printf $requiredMsg "environment") $.Values.environment }} 
+{{- $environment := required (printf $requiredMsg "environment") $.Values.environment | lower }} 
 {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }} 
 {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") $.Values.teamResourceGroupName }}
 {{- $privateEndpointName :=  include "privateEndpoint.name" (list $ $ncResource $privateEndpointSubResource) }}
