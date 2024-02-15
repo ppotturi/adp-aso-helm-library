@@ -82,6 +82,10 @@ roleDefinitionId for the roleAssignment
 {{- printf (include "builtInRole.storageTableDataContributorId" .) }}
 {{- else if eq $roleName "blobdatacontributor" }}
 {{- printf (include "builtInRole.storageBlobDataContributorId" .) }}
+{{- else if eq $roleName "tabledatareader" }}
+{{- printf (include "builtInRole.storageTableDataReaderId" .) }}
+{{- else if eq $roleName "blobdatareader" }}
+{{- printf (include "builtInRole.storageBlobDataReaderId" .) }}
 {{- else }}
 {{- fail (printf "Value for roleName is not as expected. '%s' role is not in the allowed roles." $roleName) }}
 {{- end }}
@@ -124,27 +128,88 @@ Scope for the Storage account roleAssignment
 {{- end }}
 
 {{/*
+Storage account metadata FullName
+*/}}
+{{- define "storageAccount.metadata.fullname" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountName := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" $ }}
+{{- $serviceName := (required (printf $requiredMsg "serviceName") $.Values.serviceName) }}
+{{- if $serviceName }}
+{{- (printf "%s-%s" $serviceName $storageAccountName) | lower }}
+{{- else }}
+{{- printf "this-condition-is-required-for-linting" }}
+{{- end }}
+{{- end }}
+
+{{/*
 default name for StorageAccountsBlobService, StorageAccountsTableService, StorageAccountsFileService, StorageAccountsQueueService
 */}}
-{{- define "storageaccountsService.defaultName" -}}
-{{- $storageAccountName := index . 0 }}
-{{- (printf "%s-default" $storageAccountName) | lower }}
+{{- define "storageaccountsService.metadata.defaultName" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountName := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" $ }}
+{{- $serviceName := (required (printf $requiredMsg "serviceName") $.Values.serviceName) }}
+{{- if $serviceName }}
+{{- (printf "%s-%s-default" $serviceName $storageAccountName) | lower }}
+{{- else }}
+{{- printf "this-condition-is-required-for-linting" }}
+{{- end }}
 {{- end }}
 
 {{/*
-Storage account blob service container FullName
+Storage account blob service container metadata FullName
 */}}
-{{- define "storageAccountsBlobServicesContainer.fullname" -}}
-{{- $storageAccountName := index . 0 }}
-{{- $containerName := index . 1 }}
-{{- (printf "%s-%s" (include "storageaccountsService.defaultName" (list $storageAccountName)) $containerName) | lower }}
+{{- define "storageAccountsBlobServicesContainer.metadata.fullname" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountName := index . 1 }}
+{{- $containerName := index . 2 }}
+{{- (printf "%s-%s" (include "storageaccountsService.metadata.defaultName" (list $ $storageAccountName)) $containerName) | lower }}
 {{- end }}
 
 {{/*
-Storage account Table FullName
+Storage account Table metadata FullName
 */}}
-{{- define "storageAccountsTableServicesTable.fullname" -}}
-{{- $storageAccountName := index . 0 }}
-{{- $tableName := index . 1 }}
-{{- (printf "%s-%s" (include "storageaccountsService.defaultName" (list $storageAccountName)) $tableName) | lower }}
+{{- define "storageAccountsTableServicesTable.metadata.fullname" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountName := index . 1 }}
+{{- $tableName := index . 2 }}
+{{- (printf "%s-%s" (include "storageaccountsService.metadata.defaultName" (list $ $storageAccountName)) $tableName) | lower }}
+{{- end }}
+
+{{/*
+PrivateEndpoint Name.
+*/}}
+{{- define "privateEndpoint.name" -}}
+{{- $ := index . 0 }}
+{{- $ncResource := index . 1 }}
+{{- $subResource := index . 2 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $privateEndpointPrefix := (required (printf $requiredMsg "privateEndpointPrefix") $.Values.privateEndpointPrefix) }}
+{{- if $privateEndpointPrefix }}
+{{- (printf "%s-%s-%s" $privateEndpointPrefix $ncResource $subResource) | lower }}
+{{- else }}
+{{- printf "this-condition-is-required-for-linting" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Get the Private DNS Zone Id.
+*/}}
+{{- define "privateDNSZone.resourceId" -}}
+{{- $ := index . 0 }}
+{{- $env := index . 1 }}
+{{- $privateDnsZoneName := index . 2 }}
+{{- $location := index . 3 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $azrMSTPrivateLinkDNSSubscriptionID := (required (printf $requiredMsg "azrMSTPrivateLinkDNSSubscriptionID") $.Values.azrMSTPrivateLinkDNSSubscriptionID) }}
+{{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKSouthResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKSouthResourceGroupName) }}
+{{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKWestResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKWestResourceGroupName) }}
+{{- if eq $location "uksouth" }}
+{{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKSouthResourceGroupName $privateDnsZoneName }}
+{{- else if eq $location "ukwest" }}
+{{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKWestResourceGroupName $privateDnsZoneName }}
+{{- else}}
+{{- fail (printf "Value for location is not as expected. '%s' is not in the allowed location." $location) }}
+{{- end }}
 {{- end }}

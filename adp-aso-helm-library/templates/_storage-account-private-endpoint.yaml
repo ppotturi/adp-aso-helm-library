@@ -1,0 +1,68 @@
+{{- define "adp-aso-helm-library.storage-account-private-endpoint" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountObj := index . 1 }}
+{{- $ncResource := index . 2 }}
+{{- $privateEndpointSubResource := index . 3 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
+{{- $environment := required (printf $requiredMsg "environment") $.Values.environment | lower }} 
+{{- $subscriptionId := required (printf $requiredMsg "subscriptionId") $.Values.subscriptionId }} 
+{{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") $.Values.teamResourceGroupName }}
+{{- $privateEndpointName :=  include "privateEndpoint.name" (list $ $ncResource $privateEndpointSubResource) }}
+{{- $privateEndpointVnetRGName :=  required (printf $requiredMsg "virtualNetworkResourceGroupName") $.Values.virtualNetworkResourceGroupName }}
+{{- $privateEndpointVNetName := required (printf $requiredMsg "virtualNetworkName") $.Values.virtualNetworkName }}
+{{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
+{{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+apiVersion: network.azure.com/v1api20220701
+kind: PrivateEndpoint
+metadata:
+  name: {{ $privateEndpointName }}
+  namespace: {{ $fluxConfigNamespace }}
+  annotations: 
+    serviceoperator.azure.com/reconcile-policy: detach-on-delete
+spec:
+  azureName: {{ $privateEndpointName }}
+  customNetworkInterfaceName: {{ printf "%s-nic" $privateEndpointName }}
+  location: {{ $storageAccountObj.location | default "uksouth" | quote }}
+  privateLinkServiceConnections:
+  - groupIds:
+    - {{ $privateEndpointSubResource }}
+    name: {{ $privateEndpointName }}
+    privateLinkServiceConnectionState:
+      actionsRequired: None
+      description: Auto-Approved
+      status: Approved
+    privateLinkServiceReference:
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $subscriptionId $teamRGName $storageAccountObj.name }} 
+  subnet:
+    reference:
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s" $subscriptionId $privateEndpointVnetRGName $privateEndpointVNetName $privateEndpointSubnetName }} 
+  tags:
+    {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
+  owner:
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}     
+---
+{{- if ne $environment "snd" }}
+apiVersion: network.azure.com/v1api20220701
+kind: PrivateEndpointsPrivateDnsZoneGroup
+metadata:
+  name: {{ printf "%s-default" $privateEndpointName }}
+  namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  annotations: 
+    serviceoperator.azure.com/reconcile-policy: detach-on-delete
+spec:
+  azureName: default
+  owner:
+    name: {{ $privateEndpointName }}
+  privateDnsZoneConfigs:
+  {{- if eq $privateEndpointSubResource "blob"}}
+  - name: privatelink-blob-core-windows-net
+    privateDnsZoneReference:
+      armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.blob.core.windows.net" ($storageAccountObj.location | default "uksouth")) }}
+  {{- end }}   
+  {{- if eq $privateEndpointSubResource "table"}}
+  - name: privatelink-table-core-windows-net
+    privateDnsZoneReference:
+      armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.table.core.windows.net" ($storageAccountObj.location | default "uksouth")) }}
+  {{- end }}     
+{{- end }}   
+{{- end }} 

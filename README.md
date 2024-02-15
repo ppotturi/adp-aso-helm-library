@@ -60,17 +60,27 @@ for e.g. NameSpace Queues will get created inside `serviceBusNamespaceName` name
 Whilst the Platform orchestration will manage the 'platform' level variables, they can be optionally supplied in some circumstances. Examples include in sandpit/development when testing against team-specific infrastructure (that isn't Platform shared). So, if you have a dedicated Service Bus or Database Server instance, you can point to those to ensure you apps works as expected. Otherwise, don't supply the Platform level variables as these will be automatically managed and orchestrated throughout all the environments appropriately against core shared infrastructure. You (as a Platform Tenant) just supply your team-specific/instance specific infrastructure config' (i.e. Queues, Storage Accounts, Databases).
 
 ```
-namespace: <string>                       --namespace name
-subscriptionId: <string>                  --subscription Id
-serviceBusResourceGroupName: <string>     --Name of the service bus resource group
-serviceBusNamespaceName: <string>         --Name of the environment specific service bus 
-postgresResourceGroupName: <string>       --Name of the Postgres server resource group
-postgresServerName: <string>              --Name of the environment specific postgres server
-keyVaultResourceGroupName: <string>       --Name of the keyvault resource group
-keyVaultName: <string>                    --Name of the environment specific keyVaultName
-teamMIPrefix: <string>                    --Prefix used for ManageIdentity/UserAssignedIdentity resource name
-serviceName: <string>                     --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
-teamResourceGroupName: <string>           --Team ResourceGroup Name where team resources are created.
+namespace: <string>                                     --namespace name
+environment: <string>                                   --environment name
+fluxConfigNamespace: <string>                           --fluxConfig namespace name
+subscriptionId: <string>                                --subscription Id
+serviceBusResourceGroupName: <string>                   --Name of the service bus resource group
+serviceBusNamespaceName: <string>                       --Name of the environment specific service bus 
+postgresResourceGroupName: <string>                     --Name of the Postgres server resource group
+postgresServerName: <string>                            --Name of the environment specific postgres server
+keyVaultResourceGroupName: <string>                     --Name of the keyvault resource group
+keyVaultName: <string>                                  --Name of the environment specific keyVaultName
+teamMIPrefix: <string>                                  --The prefix used for the ManageIdentity/UserAssignedIdentity resource name
+serviceName: <string>                                   --Service name. Suffix used for ManageIdentity/UserAssignedIdentity resource name
+teamResourceGroupName: <string>                         --Team ResourceGroup Name where team resources are created
+virtualNetworkResourceGroupName: <string>               --Virtual Network resource group
+virtualNetworkName: <string>                            --Virtual Network name
+privateEndpointSubnetName: <string>                     --The name of the subnet for the service's private endpoint
+privateEndpointPrefix: <string>                         --The prefix used for the private endpoint resource name
+azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. We need to discuss this further
+azrMSTPrivateLinkDNSUKWestResourceGroupName: <string>   --NOT USED. We need to discuss this further
+azrMSTPrivateLinkDNSSubscriptionID: <string>            --NOT USED. We need to discuss this further
+
 
 commonTags:
   environment: <string>
@@ -447,6 +457,12 @@ userAssignedIdentity:
 
 An ASO `StorageAccount` object to create a Microsoft.Storage/storageAccounts resource and optionally sub resources Blob Containers and Tables.
 
+| :memo: By default, private endpoints are always enabled on storage accounts and `publicNetworkAccess` is disabled. Optionally, you can also configure `ipRules` in scenarios where you want to limit access to your storage account to requests originating from specified IP addresses. |
+|:----------|
+
+| :memo: Please be aware that this template only includes A records in the central DNS zone for the Dev, Tst, Pre, and Prd environments. For Sandpit environments snd1, snd2, and snd3, it currently only generates a private endpoint without adding an A record to the DNS zone. You will need to separately add this entry via PowerShell script. |
+|:----------|
+
 With this template, you can create the below resources.
   - Storage Accounts
   - Blob containers and RoleAssignments
@@ -465,7 +481,10 @@ Below are the default values used by the the storage account template internally
 ```
 kind: "StorageV2"             -- The type of storage account will always be "StorageV2"
 dnsEndpointType: "Standard"   -- The type of endpoint
-
+minimumTlsVersion: "TLS1_2"
+allowBlobPublicAccess: "false"
+sku: "Standard_LRS"           -- This is the sku for Sandpit environments (snd1, snd2, snd3)
+sku: "Standard_RAGRS"         -- This is the sku for production environments (dev, test, pre, prd)
 ```
 
 #### Required values (Only Storage Account)
@@ -478,7 +497,7 @@ Please note that the storage account name must be unique across Azure.
 
 ```
 storageAccounts:          <Array of Object>
-  - name: <string>        --Storage account name. Should be Lowercase letters and numbers and Character limit: 3-24.
+  - name: <string>        --Storage account name. Name should be Lowercase letters and numbers and Character limit: 3-24.
   - name: <string>
 ```
 
@@ -488,19 +507,19 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 
 ```
 storageAccounts:                  <Array of Object>
-  - name: <string>                --Storage account name. Should be Lowercase letters and numbers and Character limit: 3-24
+  - name: <string>                --Storage account name. Name should be lowercase letters and numbers and Character limit: 3-24
   - name: <string>
     blobContainers:
-      - name: <string>            --Blob container name
+      - name: <string>            --Blob container name. Name should be lowercase and can contain only letters, numbers, and the hyphen/minus (-) character. Character limit: 3-63
         roleAssignments:
-          - roleName: <string>    --RoleAssignment Name (Accepted values = "BlobDataContributor")
+          - roleName: <string>    --RoleAssignment Name (Accepted values = "BlobDataContributor", "BlobDataReader")
       - name: <string>
         roleAssignments:
           - roleName: <string>
     tables: 
-      - name: <string>            --Table name
+      - name: <string>            --Table name. Name should be lowercase and may contain only alphanumeric characters. and Character limit: 3-63
         roleAssignments:
-          - roleName: <string>    --RoleAssignment Name (Accepted values = "TableDataContributor")
+          - roleName: <string>    --RoleAssignment Name (Accepted values = "TableDataContributor", "TableDataReader")
       - name: <string>
         roleAssignments:
           - roleName: <string>
@@ -521,26 +540,21 @@ storageAccounts:
     owner: <string>                                     --Default "yes"     (Accepted values = "yes", "no")
     location: <string>                                  --Default "uksouth"
     accessTier: <string>                                --Default "Hot"     (Accepted values = "Hot", "Cool")
-    allowBlobPublicAccess: <bool>                       --Default false
     allowCrossTenantReplication: <bool>                 --Default false
     allowSharedKeyAccess: <bool>                        --Default false
-    defaultToOAuthAuthentication: <bool>                --Default true
-    minimumTlsVersion: <string>                         --Default "TLS1_2"  (Accepted values = "TLS1_0", "TLS1_1", "TLS1_2")
-    publicNetworkAccess: <bool>                         --Default "Disabled" (Accepted values = "Enabled", "Disabled")
-    sku: <bool>                                         
-      name: Standard_RAGRS                              --Default "Standard_LRS"  (Accepted values = "Standard_LRS", "Standard_RAGRS")
-    ipRules: <array>                                    --Storage Firewall: Sets the IP ACL rules
-    virtualNetworkRules: <array>                        --Storage Firewall: Sets the virtual network rules
+    defaultToOAuthAuthentication: <string>              --Default true    (Accepted values = "true", "false")
+    networkAcls:
+      ipRules: <array>                                    --Storage Firewall: Sets the IP ACL rules
     storageAccountsBlobService:                         --Confugure properties for the blob service
       changeFeed:                                         --The blob service properties for change feed events
         enabled: <bool>                                       --Default false
         retentionInDays: <int>                                --Applies when changeFeed.enabled is set to true
       containerDeleteRetentionPolicy:                     --The blob service properties for container soft delete
-        enabled: <bool>                                       --Default false 
-        days: <int>                                           --Applies when containerDeleteRetentionPolicy.enabled is set to true         
+        enabled: <bool>                                       --Default true  
+        days: <int>                                           --Applies when containerDeleteRetentionPolicy.enabled is set to true. Default is 7 days       
       deleteRetentionPolicy:                              --The blob service properties for blob soft delete
-        enabled: <bool>                                       --Default false                          
-        days: <int>                                           --Applies when deleteRetentionPolicy.enabled is set to true 
+        enabled: <bool>                                       --Default true                          
+        days: <int>                                           --Applies when deleteRetentionPolicy.enabled is set to true. Default is 7 days
         allowPermanentDelete: <bool>                          --Default false 
       isVersioningEnabled: <bool>                         --Default false. Versioning is enabled if set to true
       restorePolicy:                                      --The blob service properties for blob restore policy 
@@ -549,11 +563,11 @@ storageAccounts:
     blobContainers:                                       --List of Blob containers and roleassignments
       - name: <string>                                        --Blob container name
         roleAssignments:                                      --List of roleAssignments scope to the blob container
-          - roleName: <string>                                --RoleAssignment Name (Accepted values = "BlobDataContributor")    
+          - roleName: <string>                                --RoleAssignment Name (Accepted values = "BlobDataContributor", "BlobDataReader")    
     tables:                                               --List of Tables and roleassignments
       - name: <string>                                        --Table name
         roleAssignments:                                      --List of roleAssignments scope to the table
-          - roleName: <string>                                --RoleAssignment Name (Accepted values = "TableDataContributor")
+          - roleName: <string>                                --RoleAssignment Name (Accepted values = "TableDataContributor", "TableDataReader")
 ```
 #### Usage examples
 The following section provides usage examples for the storage account template.
@@ -574,21 +588,13 @@ storageAccounts:
   - name: storage01
     accessTier: Hot
     location: uksouth
-    allowBlobPublicAccess: false
     allowCrossTenantReplication: false
     allowSharedKeyAccess: true
-    defaultToOAuthAuthentication: false
-    minimumTlsVersion: TLS1_2
-    ipRules:
-    - 82.13.86.001
-    - 82.13.86.002
-    virtualNetworkRules:
-    - "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.Network/virtualNetworks/<virtualNetworkName>/subnets/<subnetName1>"
-    - "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.Network/virtualNetworks/<virtualNetworkName>/subnets/<subnetName2>"
-    publicNetworkAccess: Enabled
-    sku:
-      name: Standard_RAGRS
-
+    defaultToOAuthAuthentication: "false"
+    networkAcls:
+      ipRules:
+      - 82.13.86.001
+      - 82.13.86.002
 ```
 
 ##### Example 3 : Create 1 storage account and configure properties for the Storage Account BlobService
@@ -617,7 +623,7 @@ storageAccounts:
 ##### Example 4 : Create 1 storage account with 2 blob containers and 1 table with roleassignments
 
 ```
-storageAccounts4:
+storageAccounts:
   - name: storage01
     blobContainers:  
       - name: container-01
@@ -625,7 +631,7 @@ storageAccounts4:
           - roleName: 'BlobDataContributor' 
       - name: container-02
         roleAssignments:
-          - roleName: 'BlobDataContributor'   
+          - roleName: 'BlobDataReader'   
     tables:  
       - name: table01  
         roleAssignments:
@@ -636,7 +642,7 @@ storageAccounts4:
 ##### Example 5 : Create 1 blob containers and 2 tables for the existing storage account in your team.
 
 ```
-storageAccounts4:
+storageAccounts:
   - name: storage01
     owner: "No"               --Note owner is set to 'No' to indicate storage account already exists and is owned by a different service in the team
     blobContainers:  
@@ -646,7 +652,38 @@ storageAccounts4:
       - name: table02
 
 ```
+### **Reference Table for Resource Names in Azure and Kubernetes**
 
+The table below shows the Azure Service Operator (ASO) resource naming convention in Azure and Kubernetes: 
+
+In the example below, the following values are used for demonstration purposes: 
+- TeamNamespaceName = 'ffc-demo'
+- Service-Name = 'ffc-demo-web'
+- MIPrefix = 'sndadpinfmi1401'
+- ManageIdName = 'sndadpinfmi1401-ffc-demo-web'
+- PENamePrefix = 'sndadpinfpe1401'
+- QueueName = 'queue01'
+- TopicName = 'topic01'
+- TopicSubName = 'topicSub01'
+- PostgresServerName = 'sndadpdbsps1401'
+- DatabaseName = 'claim'
+- StorageAccountName = 'sndxyzinfst1401'
+
+| Resource Type | Resource Name Format in `Azure` | Resource Name Example in `Azure` | Resource Name Format in `Kubernetes` | Resource Name Example in `Kubernetes`
+| -------- | ------------------ | -------- | ------------------ |------------------ |
+| NamespacesQueue | {TeamNamespaceName}-{QueueName} | ffc-demo-queue01 |	{TeamNamespaceName}-{QueueName} | ffc-demo-queue01 |
+| Queue RoleAssignment | NA | NA |	{ManageIdName}-{QueueName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-queue01-queuereceiver-rbac-0 |
+| NamespacesTopic | {TeamNamespaceName}-{TopicName} | ffc-demo-topic01 |	{TeamNamespaceName}-{TopicName} | ffc-demo-topic01 |
+| NamespacesTopicsSubscription | {TopicSubName} | topicSub01 |	{TeamNamespaceName}-{TopicName}-{TopicSubName}-subscription | ffc-demo-topic01-topicsub01-subscription |
+| Topic RoleAssignment | NA | NA |	{ManageIdName}-{TopicName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-topic01-topicreceiver-rbac-0 |
+| Postgres Database | {TeamNamespaceName}-{DatabaseName} | ffc-demo-claim | {PostgresServerName}-{TeamNamespaceName}-{DatabaseName} | sndadpdbsps1401-ffc-demo-claim |
+| Manage Idenitty | {MIPrefix}-{Service-Name} | sndadpinfmi1401-ffc-demo-web |	{MIPrefix}-{Service-Name} | sndadpinfmi1401-ffc-demo-web |
+| StorageAccount | {StorageAccountName} | sndxyzinfst1401 |	{Service-Name}-{StorageAccountName} | ffc-demo-web-sndxyzinfst1401 |
+| StorageAccountsBlobService | default | default |	{Service-Name}-{StorageAccountName}-default | ffc-demo-web-sndxyzinfst1401-default |
+| StorageAccountsBlobServicesContainer | {ContainerName} | container-01 |	{Service-Name}-{StorageAccountName}-default-{ContainerName} | ffc-demo-web-sndxyzinfst1401-default-container-01 |
+| StorageAccountsTableServicesTable | {TableName} | table01 |	{Service-Name}-{StorageAccountName}-default-{TableName} | ffc-demo-web-sndxyzinfst1401-default-table01 |
+| PrivateEndpoint | {PENamePrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndxyzinfst1401-blob | {PENamePrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndxyzinfst1401-blob |
+| PrivateEndpointsPrivateDnsZoneGroup | default | default |	{PrivateEndpointName}-default | sndadpinfpe1401-sndxyzinfst1401-blob-default |
 
 ## Helper templates
 

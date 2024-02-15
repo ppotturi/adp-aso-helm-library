@@ -7,7 +7,7 @@
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsBlobServicesContainer
 metadata:
-  name: {{ include "storageAccountsBlobServicesContainer.fullname" (list $storageAccountName $storageAccountsBlobServicesContainer.name) }}
+  name: {{ include "storageAccountsBlobServicesContainer.metadata.fullname" (list $ $storageAccountName $storageAccountsBlobServicesContainer.name) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
