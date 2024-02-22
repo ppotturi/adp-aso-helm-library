@@ -2,12 +2,12 @@
 {{- $ := index . 0 }}
 {{- $storageAccountObj := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $storageAccountName := $storageAccountObj.name }}
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
 {{- range $storageAccountsBlobServicesContainer := $storageAccountObj.blobContainers }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsBlobServicesContainer
 metadata:
-  name: {{ include "storageAccountsBlobServicesContainer.metadata.fullname" (list $ $storageAccountName $storageAccountsBlobServicesContainer.name) }}
+  name: {{ include "storageAccountsBlobServicesContainer.metadata.fullname" (list $ $storageAccountFullName $storageAccountsBlobServicesContainer.name) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
@@ -17,11 +17,11 @@ spec:
   azureName: {{ $storageAccountsBlobServicesContainer.name }}
   publicAccess: {{ $storageAccountsBlobServicesContainer.publicAccess | default "None" }}
   owner:
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountFullName }} 
 --- 
 {{- if $storageAccountsBlobServicesContainer.roleAssignments }}    
 --- 
-{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccountsBlobServicesContainer.roleAssignments $storageAccountName $storageAccountsBlobServicesContainer.name "storageContainer") }}   
+{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccountsBlobServicesContainer.roleAssignments $storageAccountFullName $storageAccountsBlobServicesContainer.name "storageContainer") }}   
 {{- end }} 
 {{- end }}
 {{- end }}

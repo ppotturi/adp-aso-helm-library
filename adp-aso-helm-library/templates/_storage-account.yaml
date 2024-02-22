@@ -6,19 +6,20 @@
 {{- $storageAccountObject := required (printf $requiredMsg "storageAccounts") .Values.storageAccounts }}
 {{- range $storageAccount := .Values.storageAccounts }}
 {{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
+{{- $storageAccountFullName :=  include "storageAccount.fullname" (list $ $storageAccountName) }}
 {{- $owner := $storageAccount.owner | default "yes" }}
 {{- if eq $owner "yes" }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
 metadata:
-  name: {{ include "storageAccount.metadata.fullname" (list $ $storageAccountName) }}
+  name: {{ include "storageAccount.metadata.fullname" (list $ $storageAccountFullName) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
     {{- toYaml . | nindent 4 }}
   {{- end }}  
 spec:
-  azureName: {{ $storageAccountName }}
+  azureName: {{ $storageAccountFullName }}
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
   kind: StorageV2
   sku:
@@ -66,9 +67,9 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}  
 ---
-{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccount.name "blob") }} 
+{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccountFullName "blob") }} 
 ---
-{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccount.name "table") }}
+{{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccountFullName "table") }}
 {{- end }} 
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-service" (list $ .) }} 

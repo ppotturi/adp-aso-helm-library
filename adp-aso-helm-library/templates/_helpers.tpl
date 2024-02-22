@@ -128,6 +128,21 @@ Scope for the Storage account roleAssignment
 {{- end }}
 
 {{/*
+Storage account FullName in Azure
+*/}}
+{{- define "storageAccount.fullname" -}}
+{{- $ := index . 0 }}
+{{- $storageAccountName := index . 1 }}
+{{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" $ }}
+{{- $storageAccountPrefix := (required (printf $requiredMsg "storageAccountPrefix") $.Values.storageAccountPrefix) }}
+{{- if $storageAccountPrefix }}
+{{- (printf "%s%s" $storageAccountPrefix $storageAccountName) | lower }}
+{{- else }}
+{{- printf "this-condition-is-required-for-linting" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Storage account metadata FullName
 */}}
 {{- define "storageAccount.metadata.fullname" -}}
@@ -141,6 +156,7 @@ Storage account metadata FullName
 {{- printf "this-condition-is-required-for-linting" }}
 {{- end }}
 {{- end }}
+
 
 {{/*
 default name for StorageAccountsBlobService, StorageAccountsTableService, StorageAccountsFileService, StorageAccountsQueueService

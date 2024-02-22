@@ -12,6 +12,7 @@
 {{- $privateEndpointVNetName := required (printf $requiredMsg "virtualNetworkName") $.Values.virtualNetworkName }}
 {{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
 {{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpoint
 metadata:
@@ -32,7 +33,7 @@ spec:
       description: Auto-Approved
       status: Approved
     privateLinkServiceReference:
-      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $subscriptionId $teamRGName $storageAccountObj.name }} 
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $subscriptionId $teamRGName $storageAccountFullName }} 
   subnet:
     reference:
       armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s" $subscriptionId $privateEndpointVnetRGName $privateEndpointVNetName $privateEndpointSubnetName }} 
