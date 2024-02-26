@@ -219,7 +219,7 @@ Added TEMPORARY values to test dns a record in SND1 environment
 {{- $privateDnsZoneName := index . 2 }}
 {{- $location := index . 3 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $azrMSTPrivateLinkDNSSubscriptionID := "55f3b8c6-6800-41c7-a40d-2adb5e4e1bd1" }}
+{{- $azrMSTPrivateLinkDNSSubscriptionID := $.Values.subscriptionId }}
 {{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := "sndadpdnsrg1401" }}
 {{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := "testukwest" }}
 {{- if eq $location "uksouth" }}
