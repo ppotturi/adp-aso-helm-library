@@ -211,6 +211,7 @@ PrivateEndpoint Name.
 
 {{/*
 Get the Private DNS Zone Id.
+Added TEMPORARY values to test dns a record in SND1 environment
 */}}
 {{- define "privateDNSZone.resourceId" -}}
 {{- $ := index . 0 }}
@@ -218,9 +219,9 @@ Get the Private DNS Zone Id.
 {{- $privateDnsZoneName := index . 2 }}
 {{- $location := index . 3 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $azrMSTPrivateLinkDNSSubscriptionID := (required (printf $requiredMsg "azrMSTPrivateLinkDNSSubscriptionID") $.Values.azrMSTPrivateLinkDNSSubscriptionID) }}
-{{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKSouthResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKSouthResourceGroupName) }}
-{{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKWestResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKWestResourceGroupName) }}
+{{- $azrMSTPrivateLinkDNSSubscriptionID := "55f3b8c6-6800-41c7-a40d-2adb5e4e1bd1" }}
+{{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := "sndadpdnsrg1401" }}
+{{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := "testukwest" }}
 {{- if eq $location "uksouth" }}
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKSouthResourceGroupName $privateDnsZoneName }}
 {{- else if eq $location "ukwest" }}

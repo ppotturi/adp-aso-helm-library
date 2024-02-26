@@ -20,6 +20,12 @@ metadata:
   namespace: {{ $fluxConfigNamespace }}
   annotations: 
     serviceoperator.azure.com/reconcile-policy: detach-on-delete
+  labels: 
+    {{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointName) }}
+    ipAddress1: {{ (index (index (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointName).status.customDnsConfigs 0).ipAddresses 0) }}
+    {{- else }}
+    ipAddress2: "0.0.0.0"
+    {{- end }}
 spec:
   azureName: {{ $privateEndpointName }}
   customNetworkInterfaceName: {{ printf "%s-nic" $privateEndpointName }}
@@ -42,7 +48,7 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}     
 ---
-{{- if ne $environment "snd" }}
+{{- if ne $environment "snd11" }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpointsPrivateDnsZoneGroup
 metadata:
@@ -64,6 +70,39 @@ spec:
   - name: privatelink-table-core-windows-net
     privateDnsZoneReference:
       armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.table.core.windows.net" ($storageAccountObj.location | default "uksouth")) }}
-  {{- end }}     
+  {{- end }}    
+---
+{{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointName) }}
+apiVersion: network.azure.com/v1api20200601
+kind: PrivateDnsZonesARecord
+metadata:
+  {{- if eq $privateEndpointSubResource "blob"}}
+  name: {{ printf "privatelink.blob.core.windows.net-%s" $storageAccountFullName }}
+  {{- end }} 
+  {{- if eq $privateEndpointSubResource "table"}}
+  name: {{ printf "privatelink.table.core.windows.net-%s" $storageAccountFullName }}
+  {{- end }}
+  namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+spec:
+  aRecords:
+  - ipv4Address: {{ (index (index (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointName).status.customDnsConfigs 0).ipAddresses 0) }}
+  azureName: {{ $storageAccountFullName }}
+  owner:
+    {{- if eq $privateEndpointSubResource "blob"}}
+    {{- if eq ($storageAccountObj.location | default "uksouth") "uksouth"}}
+    armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.blob.core.windows.net" "ukwest") }}  
+    {{- else }}
+    armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.blob.core.windows.net" "uksouth") }}  
+    {{- end }}
+    {{- end }}
+    {{- if eq $privateEndpointSubResource "table"}}
+    {{- if eq ($storageAccountObj.location | default "uksouth") "uksouth"}}
+    armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.table.core.windows.net" "ukwest") }}  
+    {{- else }}
+    armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.table.core.windows.net" "uksouth") }}  
+    {{- end }}
+    {{- end }}
+  ttl: 3600   
+{{- end }}  
 {{- end }}   
 {{- end }} 
