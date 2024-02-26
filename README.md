@@ -164,26 +164,29 @@ namespaceQueues:
       - roleName: <string> 
 ```
 
-For e.g. TeamA wanted to create a queue called "claim" and add two role assignments, then the template would look like,
+If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
+
+#### Usage examples
+The following section provides usage examples for the Namespace Queues template.
+
+##### Example 1 : ServiceA in TeamA creates queue with 2 role assignments
 
 ```
 namespaceQueues:
   name: claim
   roleAssignments:  
     - roleName: QueueSender
-    - roleName: QueueReceiver                    
+    - roleName: QueueReceiver   
 ```
 
-If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
-
-For e.g. TeamB wanted to create one role assignments on TeamA's queue, then the template would look like,
+##### Example 2 : ServiceB in TeamA needs to receive messages from existing `claim` queue. Note that `owner` is set to `no`.
 
 ```
 namespaceQueues:
   name: claim
   owner: 'no'
   roleAssignments:  
-    - roleName: QueueReceiver                    
+    - roleName: QueueReceiver     
 ```
 
 ### NameSpace Topic
@@ -253,27 +256,7 @@ namespaceTopics:
       - roleName: <string> 
 ```
 
-For e.g. TeamA wanted to create a Topic called "calculator" and add two role assignments, then the template would look like,
-
-```
-namespaceTopics:
-  name: calculator
-  roleAssignments:  
-    - roleName: TopicSender
-    - roleName: TopicReceiver                    
-```
-
-If you are creating only role assignments for the Topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic. 
-
-For e.g. TeamB wanted to create one role assignments on TeamA's Topic, then the template would look like,
-
-```
-namespaceTopics:
-  name: calculator
-  owner: 'no'
-  roleAssignments:  
-    - roleName: TopicReceiver                   
-```
+If you are creating only role assignments for the Topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic (See Example 2 in Usage examples section). 
 
 #### NameSpace Topic: Subscriptions, SubscriptionRules
 
@@ -294,36 +277,7 @@ namespaceTopics:
 
 ```
 
-For e.g. The below example will create one topic, one subscription, and two subscription rules.
-
-```
-
-namespaceTopics:
-- name: demo-topic-01
-  topicSubscriptions:
-    - name: demo-topic-subscription-01
-      topicSubscriptionRules:
-        - name: demo-topic-subscription-rule-01
-          filterType: SqlFilter
-          sqlFilter:
-            sqlExpression: "3=3"   
-        - name: demo-topic-subscription-rule-02
-          filterType: CorrelationFilter
-          sqlFilter:
-            contentType: "testvalue"             
-                    
-```
-To create `topicSubscriptions` inside already existing topics, set the property `owner` to `no`. By default `owner` is set to `yes` which creates the topic name defined in values.
-
-Below example creates only the topicSubscriptions inside the existing topic named demo-topic-01.
-
-```
-namespaceTopics:
-- name: demo-topic-01
-  owner: "no"
-  topicSubscriptions:
-    - name: demo-topic-subscription-01
-```
+To create `topicSubscriptions` inside already existing topics, set the property `owner` to `no`. By default `owner` is set to `yes` which creates the topic name defined in values (See Example 4 in Usage examples section).
 
 #### Optional values for `topicSubscriptions`
 
@@ -364,6 +318,59 @@ topicSubscriptionRules:
       sqlExpression: <string>  
 ```
 
+#### Usage examples
+The following section provides usage examples for the Namespace Topic template.
+
+##### Example 1 : ServiceA in TeamA creates Topic with 1 role assignment
+
+```
+namespaceTopics:
+  name: claim-notify
+  roleAssignments:  
+    - roleName: TopicSender 
+```
+
+##### Example 2 : ServiceB in TeamA needs to receive messages from existing `claim-notify` Topic. Note that `owner` is set to `no`.
+
+```
+namespaceTopics:
+  name: claim-notify
+  owner: 'no'
+  roleAssignments:  
+    - roleName: TopicReceiver     
+```
+
+##### Example 3 : ServiceA in TeamA creates Topic with 1 role assignment, Topic Subscription and Topic Subscription Rule.
+
+```
+namespaceTopics:
+  name: claim-notify
+  roleAssignments:  
+    - roleName: TopicSender 
+  topicSubscriptions:
+    - name: claim-notify-subscription-01
+      topicSubscriptionRules:
+        - name: claim-notify-subscription-rule-01
+          filterType: SqlFilter
+          sqlFilter:
+            sqlExpression: "3=3"   
+        - name: claim-notify-subscription-rule-02
+          filterType: CorrelationFilter
+          sqlFilter:
+            contentType: "testvalue"      
+```
+
+##### Example 4: ServiceB in TeamA creates Topic Subscription in existing Topic.
+
+```
+namespaceTopics:
+  name: claim-notify
+  owner: "no"
+  roleAssignments:  
+    - roleName: TopicReceiver
+  topicSubscriptions:
+    - name: claim-notify-subscription-03   
+```
 
 ### Database for Postgres Flexible server template
 
@@ -392,6 +399,19 @@ postgres:
     collation: <string> 
 ```
 Please note that the postgres DB name is prefixed with `namespace` internally. For example, if the namespace name is "adp-microservice" and you have provided the DB name as "demo-db," then in the postgres server, it creates a database with the name "adp-microservice-demo-db".
+
+#### Usage examples
+The following section provides usage examples for the Flexible-Servers-Db template.
+
+##### Example 1 : ServiceA in TeamA creates `payment` database
+
+```
+postgres:
+  db:
+    name: payment 
+    charset: UTF8
+    collation: en_US.utf8
+```
 
 ### UserAssignedIdentity
 
@@ -431,7 +451,7 @@ userAssignedIdentity:
 
 This template also optionally allows you to create `Federated credentials` for a given User Assigned Identity by providing `federatedCreds` properties in the userAssignedIdentity object.
 
-Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
+Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity` and `federatedCreds`.
 
 ```
 userAssignedIdentity:     
@@ -440,16 +460,16 @@ userAssignedIdentity:
         serviceAccountName: <string>     
 
 ```
+#### Usage examples
+The following section provides usage examples for the UserAssignedIdentity template.
 
-For e.g. The below example will create one userAssignedIdentity, two role assignments, and one federated credential.
+##### Example 1 : The below example will create userAssignedIdentity with one federated credential.
 
 ```
-
 userAssignedIdentity:
   federatedCreds: 
     - namespace: ffc-demo
-      serviceAccountName: ffc-demo    
-                    
+      serviceAccountName: ffc-demo 
 ```
 
 ### Storage Account
