@@ -2,7 +2,7 @@
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
 {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
 {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }} 
-{{- $environment := required (printf $requiredMsg "environment") $.Values.environment }} 
+{{- $environment := required (printf $requiredMsg "environment") $.Values.environment | lower }} 
 {{- $storageAccountObject := required (printf $requiredMsg "storageAccounts") .Values.storageAccounts }}
 {{- range $storageAccount := .Values.storageAccounts }}
 {{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
