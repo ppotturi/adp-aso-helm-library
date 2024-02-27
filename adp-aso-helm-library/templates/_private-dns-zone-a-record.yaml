@@ -52,6 +52,7 @@ spec:
     armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.table.core.windows.net" "uksouth") }}  
     {{- end }}
   ttl: 3600   
+---  
 {{- end }} 
 {{- end }}  
 {{- end }} 
