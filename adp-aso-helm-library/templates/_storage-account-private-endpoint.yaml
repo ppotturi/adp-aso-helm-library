@@ -18,14 +18,10 @@ kind: PrivateEndpoint
 metadata:
   name: {{ $privateEndpointName }}
   namespace: {{ $fluxConfigNamespace }}
+  {{- with $.Values.asoAnnotations }}
   annotations: 
-    serviceoperator.azure.com/reconcile-policy: detach-on-delete
-  labels: 
-    {{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointName) }}
-    ipAddress1: {{ (index (index (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointName).status.customDnsConfigs 0).ipAddresses 0) }}
-    {{- else }}
-    ipAddress2: "0.0.0.0"
-    {{- end }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   azureName: {{ $privateEndpointName }}
   customNetworkInterfaceName: {{ printf "%s-nic" $privateEndpointName }}
@@ -54,8 +50,10 @@ kind: PrivateEndpointsPrivateDnsZoneGroup
 metadata:
   name: {{ printf "%s-default" $privateEndpointName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  {{- with $.Values.asoAnnotations }}
   annotations: 
-    serviceoperator.azure.com/reconcile-policy: detach-on-delete
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   azureName: default
   owner:

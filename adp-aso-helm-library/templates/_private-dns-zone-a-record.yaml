@@ -15,6 +15,8 @@ kind: PrivateDnsZonesARecord
 metadata:
   name: {{ printf "privatelink.blob.core.windows.net-%s" $storageAccountFullName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  labels:
+    privateEndpointBlobName: {{ $privateEndpointBlobName }}
 spec:
   aRecords:
   {{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointBlobName) }}
@@ -35,6 +37,8 @@ kind: PrivateDnsZonesARecord
 metadata:
   name: {{ printf "privatelink.table.core.windows.net-%s" $storageAccountFullName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  labels:
+    privateEndpointTableName: {{ $privateEndpointTableName }}
 spec:
   aRecords:
   {{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointTableName) }}
