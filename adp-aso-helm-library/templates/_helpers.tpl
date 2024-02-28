@@ -230,3 +230,15 @@ Added TEMPORARY values to test dns a record in SND1 environment
 {{- fail (printf "Value for location is not as expected. '%s' is not in the allowed location." $location) }}
 {{- end }}
 {{- end }}
+
+{{/*
+Get the A record Ip Address if custom resource 'PrivateDnsZonesARecord' exist in cluster
+*/}}
+{{- define "check.ipAddressFromExistingDnsACustomResource" -}}
+{{- $customResourceDnsRecordAName := index . 0 }}
+{{- if (lookup "network.azure.com/v1api20200601" "PrivateDnsZonesARecord" "flux-config" $customResourceDnsRecordAName) }}
+{{- printf (index (lookup "network.azure.com/v1api20200601" "PrivateDnsZonesARecord" "flux-config" $customResourceDnsRecordAName).spec.aRecords 0).ipv4Address }}
+{{- else }}
+{{- printf "" }}
+{{- end }} 
+{{- end }}

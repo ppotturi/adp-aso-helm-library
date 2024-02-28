@@ -9,17 +9,22 @@
 {{- $storageAccountFullName :=  include "storageAccount.fullname" (list $ $storageAccountName) }}
 {{- $owner := $storageAccountObj.owner | default "yes" }}
 {{- if eq $owner "yes" }}
+{{- $blobDnsARecordName := printf "privatelink.blob.core.windows.net-%s" $storageAccountFullName }}
 {{- $privateEndpointBlobName :=  include "privateEndpoint.name" (list $ $storageAccountFullName "blob") }}
+{{- $blobDnsARecordIpAddressFromExistingDnsACustomResource := include "check.ipAddressFromExistingDnsACustomResource" (list $blobDnsARecordName) }}
 apiVersion: network.azure.com/v1api20200601
 kind: PrivateDnsZonesARecord
 metadata:
-  name: {{ printf "privatelink.blob.core.windows.net-%s" $storageAccountFullName }}
+  name: {{ $blobDnsARecordName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
   labels:
-    privateEndpointBlobName: {{ $privateEndpointBlobName }}
+    privateEndpointBlobName: {{ $privateEndpointBlobName }}  
+    blobDnsARecordIpAddressFromExistingDnsACustomResource: {{ $blobDnsARecordIpAddressFromExistingDnsACustomResource }} 
 spec:
   aRecords:
-  {{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointBlobName) }}
+  {{- if $blobDnsARecordIpAddressFromExistingDnsACustomResource }}
+  - ipv4Address: {{ $blobDnsARecordIpAddressFromExistingDnsACustomResource }}
+  {{- else if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointBlobName) }}
   - ipv4Address: {{ (index (index (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointBlobName).status.customDnsConfigs 0).ipAddresses 0) }}
   {{- end }} 
   azureName: {{ $storageAccountFullName }}
@@ -29,19 +34,24 @@ spec:
     {{- else }}
     armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.blob.core.windows.net" "uksouth") }}  
     {{- end }}
-  ttl: 3600   
+  ttl: 3600    
 ---
+{{- $tableDnsARecordName := printf "privatelink.table.core.windows.net-%s" $storageAccountFullName }}  
 {{- $privateEndpointTableName :=  include "privateEndpoint.name" (list $ $storageAccountFullName "table") }}
+{{- $tableDnsARecordIpAddressFromExistingDnsACustomResource := include "check.ipAddressFromExistingDnsACustomResource" (list $tableDnsARecordName) }}
 apiVersion: network.azure.com/v1api20200601
 kind: PrivateDnsZonesARecord
 metadata:
-  name: {{ printf "privatelink.table.core.windows.net-%s" $storageAccountFullName }}
+  name: {{ $tableDnsARecordName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
   labels:
     privateEndpointTableName: {{ $privateEndpointTableName }}
+    tableDnsARecordIpAddressFromExistingDnsACustomResource: {{ $tableDnsARecordIpAddressFromExistingDnsACustomResource }}
 spec:
   aRecords:
-  {{- if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointTableName) }}
+  {{- if $tableDnsARecordIpAddressFromExistingDnsACustomResource }}
+  - ipv4Address: {{ $tableDnsARecordIpAddressFromExistingDnsACustomResource }}
+  {{- else if (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointTableName) }}
   - ipv4Address: {{ (index (index (lookup "network.azure.com/v1api20220701" "PrivateEndpoint" "flux-config" $privateEndpointTableName).status.customDnsConfigs 0).ipAddresses 0) }}
   {{- end }} 
   azureName: {{ $storageAccountFullName }}
