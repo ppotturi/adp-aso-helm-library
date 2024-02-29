@@ -12,13 +12,16 @@
 {{- $privateEndpointVNetName := required (printf $requiredMsg "virtualNetworkName") $.Values.virtualNetworkName }}
 {{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
 {{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpoint
 metadata:
   name: {{ $privateEndpointName }}
   namespace: {{ $fluxConfigNamespace }}
+  {{- with $.Values.asoAnnotations }}
   annotations: 
-    serviceoperator.azure.com/reconcile-policy: detach-on-delete
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   azureName: {{ $privateEndpointName }}
   customNetworkInterfaceName: {{ printf "%s-nic" $privateEndpointName }}
@@ -32,7 +35,7 @@ spec:
       description: Auto-Approved
       status: Approved
     privateLinkServiceReference:
-      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $subscriptionId $teamRGName $storageAccountObj.name }} 
+      armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $subscriptionId $teamRGName $storageAccountFullName }} 
   subnet:
     reference:
       armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s" $subscriptionId $privateEndpointVnetRGName $privateEndpointVNetName $privateEndpointSubnetName }} 
@@ -47,8 +50,10 @@ kind: PrivateEndpointsPrivateDnsZoneGroup
 metadata:
   name: {{ printf "%s-default" $privateEndpointName }}
   namespace: {{ required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
+  {{- with $.Values.asoAnnotations }}
   annotations: 
-    serviceoperator.azure.com/reconcile-policy: detach-on-delete
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   azureName: default
   owner:
@@ -63,6 +68,6 @@ spec:
   - name: privatelink-table-core-windows-net
     privateDnsZoneReference:
       armId: {{ include "privateDNSZone.resourceId" (list $ ($environment) "privatelink.table.core.windows.net" ($storageAccountObj.location | default "uksouth")) }}
-  {{- end }}     
+  {{- end }}    
 {{- end }}   
 {{- end }} 

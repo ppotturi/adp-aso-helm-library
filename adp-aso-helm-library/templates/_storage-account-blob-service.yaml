@@ -2,11 +2,11 @@
 {{- $ := index . 0 }}
 {{- $storageAccountObj := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $storageAccountName := $storageAccountObj.name }}
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsBlobService
 metadata:
-  name: {{ include "storageaccountsService.metadata.defaultName" (list $ $storageAccountName) }}
+  name: {{ include "storageaccountsService.metadata.defaultName" (list $ $storageAccountFullName) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
@@ -71,5 +71,5 @@ spec:
   isVersioningEnabled: {{ and $storageAccountObj.storageAccountsBlobService $storageAccountObj.storageAccountsBlobService.isVersioningEnabled | default false }}
   cors: {}
   owner:
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountFullName }} 
 {{- end }}

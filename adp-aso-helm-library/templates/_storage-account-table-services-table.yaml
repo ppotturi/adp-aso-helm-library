@@ -2,12 +2,12 @@
 {{- $ := index . 0 }}
 {{- $storageAccountObj := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $storageAccountName := $storageAccountObj.name }}
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
 {{- range $storageAccountsTableServicesTable := $storageAccountObj.tables }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccountsTableServicesTable
 metadata:
-  name: {{ include "storageAccountsTableServicesTable.metadata.fullname" (list $ $storageAccountName $storageAccountsTableServicesTable.name) }}
+  name: {{ include "storageAccountsTableServicesTable.metadata.fullname" (list $ $storageAccountFullName $storageAccountsTableServicesTable.name) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
   annotations: 
@@ -16,11 +16,11 @@ metadata:
 spec:
   azureName: {{ $storageAccountsTableServicesTable.name }}
   owner:
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/tableServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }} 
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/tableServices/default" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountFullName }} 
 --- 
 {{- if $storageAccountsTableServicesTable.roleAssignments }}    
 --- 
-{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccountsTableServicesTable.roleAssignments $storageAccountName $storageAccountsTableServicesTable.name "storageTable") }}   
+{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccountsTableServicesTable.roleAssignments $storageAccountFullName $storageAccountsTableServicesTable.name "storageTable") }}   
 {{- end }} 
 {{- end }}
 {{- end }}

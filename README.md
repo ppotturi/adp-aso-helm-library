@@ -75,6 +75,7 @@ serviceName: <string>                                   --Service name. Suffix u
 teamResourceGroupName: <string>                         --Team ResourceGroup Name where team resources are created
 virtualNetworkResourceGroupName: <string>               --Virtual Network resource group
 virtualNetworkName: <string>                            --Virtual Network name
+storageAccountPrefix: <string>                          --The prefix used for the storage account resource name
 privateEndpointSubnetName: <string>                     --The name of the subnet for the service's private endpoint
 privateEndpointPrefix: <string>                         --The prefix used for the private endpoint resource name
 azrMSTPrivateLinkDNSUKSouthResourceGroupName: <string>  --NOT USED. We need to discuss this further
@@ -163,26 +164,29 @@ namespaceQueues:
       - roleName: <string> 
 ```
 
-For e.g. TeamA wanted to create a queue called "claim" and add two role assignments, then the template would look like,
+If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
+
+#### Usage examples
+The following section provides usage examples for the Namespace Queues template.
+
+##### Example 1 : ServiceA in TeamA creates queue with 2 role assignments
 
 ```
 namespaceQueues:
   name: claim
   roleAssignments:  
     - roleName: QueueSender
-    - roleName: QueueReceiver                    
+    - roleName: QueueReceiver   
 ```
 
-If you are creating only role assignments for the queue you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing queue. 
-
-For e.g. TeamB wanted to create one role assignments on TeamA's queue, then the template would look like,
+##### Example 2 : ServiceB in TeamA needs to receive messages from existing `claim` queue. Note that `owner` is set to `no`.
 
 ```
 namespaceQueues:
   name: claim
   owner: 'no'
   roleAssignments:  
-    - roleName: QueueReceiver                    
+    - roleName: QueueReceiver     
 ```
 
 ### NameSpace Topic
@@ -252,27 +256,7 @@ namespaceTopics:
       - roleName: <string> 
 ```
 
-For e.g. TeamA wanted to create a Topic called "calculator" and add two role assignments, then the template would look like,
-
-```
-namespaceTopics:
-  name: calculator
-  roleAssignments:  
-    - roleName: TopicSender
-    - roleName: TopicReceiver                    
-```
-
-If you are creating only role assignments for the Topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic. 
-
-For e.g. TeamB wanted to create one role assignments on TeamA's Topic, then the template would look like,
-
-```
-namespaceTopics:
-  name: calculator
-  owner: 'no'
-  roleAssignments:  
-    - roleName: TopicReceiver                   
-```
+If you are creating only role assignments for the Topic you do not own, then you should explicitly set the `owner` flag to `no` so that it will only create the role assignments on the existing Topic (See Example 2 in Usage examples section). 
 
 #### NameSpace Topic: Subscriptions, SubscriptionRules
 
@@ -293,36 +277,7 @@ namespaceTopics:
 
 ```
 
-For e.g. The below example will create one topic, one subscription, and two subscription rules.
-
-```
-
-namespaceTopics:
-- name: demo-topic-01
-  topicSubscriptions:
-    - name: demo-topic-subscription-01
-      topicSubscriptionRules:
-        - name: demo-topic-subscription-rule-01
-          filterType: SqlFilter
-          sqlFilter:
-            sqlExpression: "3=3"   
-        - name: demo-topic-subscription-rule-02
-          filterType: CorrelationFilter
-          sqlFilter:
-            contentType: "testvalue"             
-                    
-```
-To create `topicSubscriptions` inside already existing topics, set the property `owner` to `no`. By default `owner` is set to `yes` which creates the topic name defined in values.
-
-Below example creates only the topicSubscriptions inside the existing topic named demo-topic-01.
-
-```
-namespaceTopics:
-- name: demo-topic-01
-  owner: "no"
-  topicSubscriptions:
-    - name: demo-topic-subscription-01
-```
+To create `topicSubscriptions` inside already existing topics, set the property `owner` to `no`. By default `owner` is set to `yes` which creates the topic name defined in values (See Example 4 in Usage examples section).
 
 #### Optional values for `topicSubscriptions`
 
@@ -363,6 +318,59 @@ topicSubscriptionRules:
       sqlExpression: <string>  
 ```
 
+#### Usage examples
+The following section provides usage examples for the Namespace Topic template.
+
+##### Example 1 : ServiceA in TeamA creates Topic with 1 role assignment
+
+```
+namespaceTopics:
+  name: claim-notify
+  roleAssignments:  
+    - roleName: TopicSender 
+```
+
+##### Example 2 : ServiceB in TeamA needs to receive messages from existing `claim-notify` Topic. Note that `owner` is set to `no`.
+
+```
+namespaceTopics:
+  name: claim-notify
+  owner: 'no'
+  roleAssignments:  
+    - roleName: TopicReceiver     
+```
+
+##### Example 3 : ServiceA in TeamA creates Topic with 1 role assignment, Topic Subscription and Topic Subscription Rule.
+
+```
+namespaceTopics:
+  name: claim-notify
+  roleAssignments:  
+    - roleName: TopicSender 
+  topicSubscriptions:
+    - name: claim-notify-subscription-01
+      topicSubscriptionRules:
+        - name: claim-notify-subscription-rule-01
+          filterType: SqlFilter
+          sqlFilter:
+            sqlExpression: "3=3"   
+        - name: claim-notify-subscription-rule-02
+          filterType: CorrelationFilter
+          sqlFilter:
+            contentType: "testvalue"      
+```
+
+##### Example 4: ServiceB in TeamA creates Topic Subscription in existing Topic.
+
+```
+namespaceTopics:
+  name: claim-notify
+  owner: "no"
+  roleAssignments:  
+    - roleName: TopicReceiver
+  topicSubscriptions:
+    - name: claim-notify-subscription-03   
+```
 
 ### Database for Postgres Flexible server template
 
@@ -391,6 +399,19 @@ postgres:
     collation: <string> 
 ```
 Please note that the postgres DB name is prefixed with `namespace` internally. For example, if the namespace name is "adp-microservice" and you have provided the DB name as "demo-db," then in the postgres server, it creates a database with the name "adp-microservice-demo-db".
+
+#### Usage examples
+The following section provides usage examples for the Flexible-Servers-Db template.
+
+##### Example 1 : ServiceA in TeamA creates `payment` database
+
+```
+postgres:
+  db:
+    name: payment 
+    charset: UTF8
+    collation: en_US.utf8
+```
 
 ### UserAssignedIdentity
 
@@ -430,7 +451,7 @@ userAssignedIdentity:
 
 This template also optionally allows you to create `Federated credentials` for a given User Assigned Identity by providing `federatedCreds` properties in the userAssignedIdentity object.
 
-Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity`, `roleAssignments` and `federatedCreds`.
+Below are the minimum values that are required to be set in the parent chart's values.yaml to create a `userAssignedIdentity` and `federatedCreds`.
 
 ```
 userAssignedIdentity:     
@@ -439,16 +460,16 @@ userAssignedIdentity:
         serviceAccountName: <string>     
 
 ```
+#### Usage examples
+The following section provides usage examples for the UserAssignedIdentity template.
 
-For e.g. The below example will create one userAssignedIdentity, two role assignments, and one federated credential.
+##### Example 1 : The below example will create userAssignedIdentity with one federated credential.
 
 ```
-
 userAssignedIdentity:
   federatedCreds: 
     - namespace: ffc-demo
-      serviceAccountName: ffc-demo    
-                    
+      serviceAccountName: ffc-demo 
 ```
 
 ### Storage Account
@@ -494,10 +515,12 @@ The following values need to be set in the parent chart's `values.yaml` in addit
 Note that `storageAccounts` is an array of objects that can be used to create more than one Storage Accounts.
 
 Please note that the storage account name must be unique across Azure.
+storage account name is internally prefixed with the `storageAccountPrefix`.  
+For instance, in the Dev environment, the storageAccountPrefix is configured as `devadpinfst2401`. If you input "claim" as the storage account name, the final storage account name will be `devadpinfst2401claim`.
 
 ```
 storageAccounts:          <Array of Object>
-  - name: <string>        --Storage account name. Name should be Lowercase letters and numbers and Character limit: 3-24.
+  - name: <string>        --Storage account name. Name should be Lowercase letters and numbers and Maximum character limit is `9`
   - name: <string>
 ```
 
@@ -506,8 +529,8 @@ storageAccounts:          <Array of Object>
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
 ```
-storageAccounts:                  <Array of Object>
-  - name: <string>                --Storage account name. Name should be lowercase letters and numbers and Character limit: 3-24
+storageAccounts:           <Array of Object>
+  - name: <string>         --Storage account name. Name should be lowercase letters and numbers and Maximum character limit is `9`
   - name: <string>
     blobContainers:
       - name: <string>            --Blob container name. Name should be lowercase and can contain only letters, numbers, and the hyphen/minus (-) character. Character limit: 3-63
@@ -656,34 +679,38 @@ storageAccounts:
 
 The table below shows the Azure Service Operator (ASO) resource naming convention in Azure and Kubernetes: 
 
-In the example below, the following values are used for demonstration purposes: 
-- TeamNamespaceName = 'ffc-demo'
-- Service-Name = 'ffc-demo-web'
-- MIPrefix = 'sndadpinfmi1401'
-- ManageIdName = 'sndadpinfmi1401-ffc-demo-web'
-- PENamePrefix = 'sndadpinfpe1401'
+In the example below, the following platform values are used for demonstration purposes: 
+- namespace = 'ffc-demo'
+- serviceName = 'ffc-demo-web'
+- teamMIPrefix = 'sndadpinfmi1401'
+- storageAccountPrefix = 'sndadpinfst1401'
+- privateEndpointPrefix = 'sndadpinfpe1401'
+- postgresServerName = 'sndadpdbsps1401'
+- userassignedidentityName = 'sndadpinfmi1401-ffc-demo-web'
+
+And the following user input values are used for demonstration purposes: 
+
 - QueueName = 'queue01'
 - TopicName = 'topic01'
 - TopicSubName = 'topicSub01'
-- PostgresServerName = 'sndadpdbsps1401'
 - DatabaseName = 'claim'
-- StorageAccountName = 'sndxyzinfst1401'
+- StorageAccountName = 'demo'
 
 | Resource Type | Resource Name Format in `Azure` | Resource Name Example in `Azure` | Resource Name Format in `Kubernetes` | Resource Name Example in `Kubernetes`
 | -------- | ------------------ | -------- | ------------------ |------------------ |
-| NamespacesQueue | {TeamNamespaceName}-{QueueName} | ffc-demo-queue01 |	{TeamNamespaceName}-{QueueName} | ffc-demo-queue01 |
-| Queue RoleAssignment | NA | NA |	{ManageIdName}-{QueueName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-queue01-queuereceiver-rbac-0 |
-| NamespacesTopic | {TeamNamespaceName}-{TopicName} | ffc-demo-topic01 |	{TeamNamespaceName}-{TopicName} | ffc-demo-topic01 |
-| NamespacesTopicsSubscription | {TopicSubName} | topicSub01 |	{TeamNamespaceName}-{TopicName}-{TopicSubName}-subscription | ffc-demo-topic01-topicsub01-subscription |
-| Topic RoleAssignment | NA | NA |	{ManageIdName}-{TopicName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-topic01-topicreceiver-rbac-0 |
-| Postgres Database | {TeamNamespaceName}-{DatabaseName} | ffc-demo-claim | {PostgresServerName}-{TeamNamespaceName}-{DatabaseName} | sndadpdbsps1401-ffc-demo-claim |
-| Manage Idenitty | {MIPrefix}-{Service-Name} | sndadpinfmi1401-ffc-demo-web |	{MIPrefix}-{Service-Name} | sndadpinfmi1401-ffc-demo-web |
-| StorageAccount | {StorageAccountName} | sndxyzinfst1401 |	{Service-Name}-{StorageAccountName} | ffc-demo-web-sndxyzinfst1401 |
-| StorageAccountsBlobService | default | default |	{Service-Name}-{StorageAccountName}-default | ffc-demo-web-sndxyzinfst1401-default |
-| StorageAccountsBlobServicesContainer | {ContainerName} | container-01 |	{Service-Name}-{StorageAccountName}-default-{ContainerName} | ffc-demo-web-sndxyzinfst1401-default-container-01 |
-| StorageAccountsTableServicesTable | {TableName} | table01 |	{Service-Name}-{StorageAccountName}-default-{TableName} | ffc-demo-web-sndxyzinfst1401-default-table01 |
-| PrivateEndpoint | {PENamePrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndxyzinfst1401-blob | {PENamePrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndxyzinfst1401-blob |
-| PrivateEndpointsPrivateDnsZoneGroup | default | default |	{PrivateEndpointName}-default | sndadpinfpe1401-sndxyzinfst1401-blob-default |
+| NamespacesQueue | {namespace}-{QueueName} | ffc-demo-queue01 |	{namespace}-{QueueName} | ffc-demo-queue01 |
+| Queue RoleAssignment | NA | NA |	{userassignedidentityName}-{QueueName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-queue01-queuereceiver-rbac-0 |
+| NamespacesTopic | {namespace}-{TopicName} | ffc-demo-topic01 |	{namespace}-{TopicName} | ffc-demo-topic01 |
+| NamespacesTopicsSubscription | {TopicSubName} | topicSub01 |	{namespace}-{TopicName}-{TopicSubName}-subscription | ffc-demo-topic01-topicsub01-subscription |
+| Topic RoleAssignment | NA | NA |	{userassignedidentityName}-{TopicName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-topic01-topicreceiver-rbac-0 |
+| Postgres Database | {namespace}-{DatabaseName} | ffc-demo-claim | {postgresServerName}-{namespace}-{DatabaseName} | sndadpdbsps1401-ffc-demo-claim |
+| Manage Idenitty | {teamMIPrefix}-{serviceName} | sndadpinfmi1401-ffc-demo-web |	{teamMIPrefix}-{serviceName} | sndadpinfmi1401-ffc-demo-web |
+| StorageAccount | {storageAccountPrefix}{StorageAccountName} | sndadpinfst1401demo |	{serviceName}-{StorageAccountName} | ffc-demo-web-sndadpinfst1401demo |
+| StorageAccountsBlobService | default | default |	{serviceName}-{StorageAccountName}-default | ffc-demo-web-sndadpinfst1401demo-default |
+| StorageAccountsBlobServicesContainer | {ContainerName} | container-01 |	{serviceName}-{StorageAccountName}-default-{ContainerName} | ffc-demo-web-sndadpinfst1401demo-default-container-01 |
+| StorageAccountsTableServicesTable | {TableName} | table01 |	{serviceName}-{StorageAccountName}-default-{TableName} | ffc-demo-web-sndadpinfst1401demo-default-table01 |
+| PrivateEndpoint | {privateEndpointPrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndadpinfst1401demo-blob | {privateEndpointPrefix}-{ResourceName}-{SubResource} | sndadpinfpe1401-sndadpinfst1401demo-blob |
+| PrivateEndpointsPrivateDnsZoneGroup | default | default |	{PrivateEndpointName}-default | sndadpinfpe1401-sndadpinfst1401demo-blob-default |
 
 ## Helper templates
 
