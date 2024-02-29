@@ -48,7 +48,7 @@ spec:
   minimumTlsVersion: "TLS1_2"
   networkAcls:
     bypass: AzureServices
-    defaultAction: Allow
+    defaultAction: Deny
     {{- if and $storageAccount.networkAcls $storageAccount.networkAcls.ipRules }}
     ipRules: 
     {{- range $storageAccount.networkAcls.ipRules }}

@@ -520,7 +520,7 @@ For instance, in the Dev environment, the storageAccountPrefix is configured as 
 
 ```
 storageAccounts:          <Array of Object>
-  - name: <string>        --Storage account name. Name should be Lowercase letters and numbers and Character limit: 3-24.
+  - name: <string>        --Storage account name. Name should be Lowercase letters and numbers and Maximum character limit is `9`
   - name: <string>
 ```
 
@@ -529,8 +529,8 @@ storageAccounts:          <Array of Object>
 The following values need to be set in the parent chart's `values.yaml` in addition to the globally required values [listed above](#all-template-required-values).
 
 ```
-storageAccounts:                  <Array of Object>
-  - name: <string>                --Storage account name. Name should be lowercase letters and numbers and Character limit: 3-24
+storageAccounts:           <Array of Object>
+  - name: <string>         --Storage account name. Name should be lowercase letters and numbers and Maximum character limit is `9`
   - name: <string>
     blobContainers:
       - name: <string>            --Blob container name. Name should be lowercase and can contain only letters, numbers, and the hyphen/minus (-) character. Character limit: 3-63

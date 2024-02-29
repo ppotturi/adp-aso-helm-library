@@ -136,7 +136,11 @@ Storage account FullName in Azure
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" $ }}
 {{- $storageAccountPrefix := (required (printf $requiredMsg "storageAccountPrefix") $.Values.storageAccountPrefix) }}
 {{- if $storageAccountPrefix }}
+{{- if le (len $storageAccountName) 9 }}
 {{- (printf "%s%s" $storageAccountPrefix $storageAccountName) | lower }}
+{{- else }}
+{{- fail (printf "The storage account name '%s' is longer than the permitted 9 characters." $storageAccountName) }}
+{{- end }}
 {{- else }}
 {{- printf "this-condition-is-required-for-linting" }}
 {{- end }}
@@ -219,9 +223,9 @@ Added TEMPORARY values to test dns a record in SND1 environment
 {{- $privateDnsZoneName := index . 2 }}
 {{- $location := index . 3 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" . }}
-{{- $azrMSTPrivateLinkDNSSubscriptionID := $.Values.subscriptionId }}
-{{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := "sndadpdnsrg1401" }}
-{{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := "testukwest" }}
+{{- $azrMSTPrivateLinkDNSSubscriptionID := (required (printf $requiredMsg "azrMSTPrivateLinkDNSSubscriptionID") $.Values.azrMSTPrivateLinkDNSSubscriptionID) }}
+{{- $azrMSTPrivateLinkDNSUKSouthResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKSouthResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKSouthResourceGroupName) }}
+{{- $azrMSTPrivateLinkDNSUKWestResourceGroupName := (required (printf $requiredMsg "azrMSTPrivateLinkDNSUKWestResourceGroupName") $.Values.azrMSTPrivateLinkDNSUKWestResourceGroupName) }}
 {{- if eq $location "uksouth" }}
 {{- printf "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s" $azrMSTPrivateLinkDNSSubscriptionID $azrMSTPrivateLinkDNSUKSouthResourceGroupName $privateDnsZoneName }}
 {{- else if eq $location "ukwest" }}
