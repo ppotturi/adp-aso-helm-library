@@ -215,7 +215,6 @@ PrivateEndpoint Name.
 
 {{/*
 Get the Private DNS Zone Id.
-Added TEMPORARY values to test dns a record in SND1 environment
 */}}
 {{- define "privateDNSZone.resourceId" -}}
 {{- $ := index . 0 }}
