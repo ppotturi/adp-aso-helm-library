@@ -135,15 +135,16 @@ Storage account FullName in Azure
 {{- $storageAccountName := index . 1 }}
 {{- $requiredMsg := include "adp-aso-helm-library.default-check-required-msg" $ }}
 {{- $storageAccountPrefix := (required (printf $requiredMsg "storageAccountPrefix") $.Values.storageAccountPrefix) }}
-{{- if $storageAccountPrefix }}
 {{- if le (len $storageAccountName) 9 }}
+{{- if $storageAccountPrefix }}
 {{- (printf "%s%s" $storageAccountPrefix $storageAccountName) | lower }}
-{{- else }}
-{{- fail (printf "The storage account name '%s' is longer than the permitted 9 characters." $storageAccountName) }}
-{{- end }}
 {{- else }}
 {{- printf "this-condition-is-required-for-linting" }}
 {{- end }}
+{{- else }}
+{{- fail (printf "The storage account name '%s' is longer than the permitted 9 characters." $storageAccountName) }}
+{{- end }}
+
 {{- end }}
 
 {{/*
