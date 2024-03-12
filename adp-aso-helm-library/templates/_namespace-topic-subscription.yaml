@@ -17,7 +17,7 @@ metadata:
   name: {{ $topicSubscriptionName }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
 spec:
-  azureName: {{ $namespaceTopicSubscription.name }}
+  azureName: {{printf "%s-%s" $.Values.namespace $namespaceTopicSubscription.name }}
   deadLetteringOnFilterEvaluationExceptions: {{ $namespaceTopicSubscription.deadLetteringOnFilterEvaluationExceptions | default false }}
   deadLetteringOnMessageExpiration: {{ $namespaceTopicSubscription.deadLetteringOnMessageExpiration | default false }}
   defaultMessageTimeToLive: {{ $namespaceTopicSubscription.defaultMessageTimeToLive | default "P14D" | quote }}
