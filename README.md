@@ -701,7 +701,7 @@ And the following user input values are used for demonstration purposes:
 | NamespacesQueue | {namespace}-{QueueName} | ffc-demo-queue01 |	{namespace}-{QueueName} | ffc-demo-queue01 |
 | Queue RoleAssignment | NA | NA |	{userassignedidentityName}-{QueueName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-queue01-queuereceiver-rbac-0 |
 | NamespacesTopic | {namespace}-{TopicName} | ffc-demo-topic01 |	{namespace}-{TopicName} | ffc-demo-topic01 |
-| NamespacesTopicsSubscription | {TopicSubName} | topicSub01 |	{namespace}-{TopicName}-{TopicSubName}-subscription | ffc-demo-topic01-topicsub01-subscription |
+| NamespacesTopicsSubscription | {namespace}-{TopicSubName} | ffc-demo-topicSub01 |	{namespace}-{TopicName}-{TopicSubName}-subscription | ffc-demo-topic01-topicsub01-subscription |
 | Topic RoleAssignment | NA | NA |	{userassignedidentityName}-{TopicName}-{RoleName}-rbac-{index} | sndadpinfmi1401-ffc-demo-web-ffc-demo-topic01-topicreceiver-rbac-0 |
 | Postgres Database | {namespace}-{DatabaseName} | ffc-demo-claim | {postgresServerName}-{namespace}-{DatabaseName} | sndadpdbsps1401-ffc-demo-claim |
 | Manage Idenitty | {teamMIPrefix}-{serviceName} | sndadpinfmi1401-ffc-demo-web |	{teamMIPrefix}-{serviceName} | sndadpinfmi1401-ffc-demo-web |
