@@ -8,6 +8,7 @@
 {{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
 {{- $storageAccountFullName :=  include "storageAccount.fullname" (list $ $storageAccountName) }}
 {{- $owner := $storageAccount.owner | default "yes" }}
+{{- $enablePrivateEndpoint := required (printf $requiredMsg "enablePrivateEndpoint") $.Values.enablePrivateEndpoint }}
 {{- if eq $owner "yes" }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
