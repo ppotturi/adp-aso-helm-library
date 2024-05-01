@@ -24,7 +24,7 @@ spec:
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
   kind: StorageV2
   sku:
-    {{- if eq $enablePrivateEndpoint "true" }}
+    {{- if eq $enablePrivateEndpoint "enable" }}
     name: "Standard_RAGRS"
     {{- else }}
     name: "Standard_LRS"
