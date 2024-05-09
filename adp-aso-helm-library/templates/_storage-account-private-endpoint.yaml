@@ -12,9 +12,8 @@
 {{- $privateEndpointVNetName := required (printf $requiredMsg "virtualNetworkName") $.Values.virtualNetworkName }}
 {{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
 {{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
-{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}  
-{{- $enablePrivateEndpoint := $.Values.enablePrivateEndpoint | default "enable" | lower }}
-{{- $enablePrivateEndpoint := required (printf $requiredMsg "enablePrivateEndpoint") $enablePrivateEndpoint }} 
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
+{{- $enablePrivateEndpoint := required (printf $requiredMsg "enablePrivateEndpoint") $.Values.enablePrivateEndpoint | default "enable" | lower }} 
 {{- if eq $enablePrivateEndpoint "enable" }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpoint
