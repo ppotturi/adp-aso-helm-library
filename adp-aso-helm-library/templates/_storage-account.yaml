@@ -8,7 +8,7 @@
 {{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
 {{- $storageAccountFullName :=  include "storageAccount.fullname" (list $ $storageAccountName) }}
 {{- $owner := $storageAccount.owner | default "yes" }}
-{{- $storageAccountSku := required (printf $requiredMsg "storageAccountSku") $.Values.storageAccountSku | default "Standard_RAGRS" }} 
+{{- $storageAccountSku := required (printf $requiredMsg "storageAccountSku") $.Values.storageAccountSku | default "Standard_LRS" }} 
 {{- if eq $owner "yes" }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
@@ -24,11 +24,7 @@ spec:
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
   kind: StorageV2
   sku:
-    {{- if eq $storageAccountSku "Standard_RAGRS" }}
-    name: "Standard_RAGRS"
-    {{- else }}
-    name: "Standard_LRS"
-    {{- end }}
+    name: {{ coalesce $storageAccountSku "Standard_LRS" }}
     tier: Standard
   location: {{ $storageAccount.location | default "uksouth" | quote }}
   allowBlobPublicAccess: false
