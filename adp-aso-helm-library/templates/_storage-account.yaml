@@ -24,7 +24,7 @@ spec:
   accessTier: {{ $storageAccount.accessTier | default "Hot" }}
   kind: StorageV2
   sku:
-    name: {{ coalesce $storageAccountSku "Standard_LRS" }}
+    name: {{ $storageAccountSku }}
     tier: Standard
   location: {{ $storageAccount.location | default "uksouth" | quote }}
   allowBlobPublicAccess: false
