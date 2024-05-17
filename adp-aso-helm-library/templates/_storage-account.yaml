@@ -9,7 +9,6 @@
 {{- $storageAccountFullName :=  include "storageAccount.fullname" (list $ $storageAccountName) }}
 {{- $owner := $storageAccount.owner | default "yes" }}
 {{- $storageAccountSku := required (printf $requiredMsg "storageAccountSku") $.Values.storageAccountSku }} 
-{{- $storageAccountSku | printf "\n storageAccountSku: \n%s" | fail }}
 {{- if eq $owner "yes" }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
