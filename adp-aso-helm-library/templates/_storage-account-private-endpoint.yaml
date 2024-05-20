@@ -12,9 +12,8 @@
 {{- $privateEndpointVNetName := required (printf $requiredMsg "virtualNetworkName") $.Values.virtualNetworkName }}
 {{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
 {{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
-{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
-{{- $enablePrivateEndpoint := $.Values.enablePrivateEndpoint | default false }} 
-{{- if $enablePrivateEndpoint }}
+{{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }} 
+{{- if $.Values.enablePrivateEndpoint }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpoint
 metadata:
@@ -47,7 +46,7 @@ spec:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}  
 {{- end }}   
 ---
-{{- if $enablePrivateEndpoint }}
+{{- if  $.Values.enablePrivateEndpoint }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpointsPrivateDnsZoneGroup
 metadata:
