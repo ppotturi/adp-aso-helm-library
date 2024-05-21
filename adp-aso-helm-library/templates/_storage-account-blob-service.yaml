@@ -9,7 +9,8 @@ metadata:
   name: {{ include "storageaccountsService.metadata.defaultName" (list $ $storageAccountFullName) }}
   namespace: {{ required (printf $requiredMsg "namespace") $.Values.namespace | quote }}  
   {{- with $.Values.asoAnnotations }}
-  annotations: 
+  annotations:
+    serviceoperator.azure.com/reconcile-policy: detach-on-delete
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
