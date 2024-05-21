@@ -10,6 +10,7 @@ metadata:
   namespace: {{ $namespace }}
   {{ with .Values.asoAnnotations }}
   annotations:
+    serviceoperator.azure.com/reconcile-policy: detach-on-delete
     {{ toYaml . | nindent 4 }}
   {{ end }}
 spec:
