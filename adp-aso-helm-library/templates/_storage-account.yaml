@@ -8,7 +8,8 @@
 {{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
 {{- $storageAccountFullName :=  include "storageAccount.fullname" (list $ $storageAccountName) }}
 {{- $owner := $storageAccount.owner | default "yes" }}
-{{- $storageAccountSku :=  $.Values.storageAccountSku | default "Standard_LRS" }} 
+{{- $storageAccountSku :=  $.Values.storageAccountSku | default "Standard_LRS" }}
+{{- $enablePrivateEndpoint := $.Values.enablePrivateEndpoint | default "disable" }}
 {{- if eq $owner "yes" }}
 apiVersion: storage.azure.com/v1api20220901
 kind: StorageAccount
@@ -46,19 +47,24 @@ spec:
   minimumTlsVersion: "TLS1_2"
   networkAcls:
     bypass: AzureServices
+    {{- if or (and $storageAccount.networkAcls $storageAccount.networkAcls.ipRules) (eq $enablePrivateEndpoint "enable") }}
     defaultAction: Deny
+    {{- else }}
+    defaultAction: Allow
+    resourceAccessRules: []
+    {{- end }}
     {{- if and $storageAccount.networkAcls $storageAccount.networkAcls.ipRules }}
     ipRules: 
     {{- range $storageAccount.networkAcls.ipRules }}
     - action: Allow
       value: {{ . }}
-    {{- end }} 
-    {{- end }}    
-  {{- if and $storageAccount.networkAcls $storageAccount.networkAcls.ipRules }}  
-  publicNetworkAccess: "Enabled" 
-  {{- else }} 
+    {{- end }}
+    {{- end }}
+  {{- if eq $enablePrivateEndpoint "enable" }}
   publicNetworkAccess: "Disabled"
-  {{- end }} 
+  {{- else }}
+  publicNetworkAccess: "Enabled"
+  {{- end }}
   supportsHttpsTrafficOnly: true
   tags:
   {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
@@ -76,7 +82,7 @@ spec:
 ---  
 {{- include "adp-aso-helm-library.storage-account-blob-services-container" (list $ .) }} 
 {{- end }} 
-{{- if $storageAccount.tables }}  
+{{- if $storageAccount.tables }}
 ---  
 {{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }}  
 {{- end }} 
