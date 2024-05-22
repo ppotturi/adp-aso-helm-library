@@ -13,6 +13,8 @@
 {{- $privateEndpointSubnetName := required (printf $requiredMsg "privateEndpointSubnetName") $.Values.privateEndpointSubnetName }}
 {{- $fluxConfigNamespace := required (printf $requiredMsg "fluxConfigNamespace") $.Values.fluxConfigNamespace }}
 {{- $storageAccountFullName := include "storageAccount.fullname" (list $ $storageAccountObj.name) }}
+{{- $enablePrivateEndpoint := $.Values.enablePrivateEndpoint | default "disable" }}
+{{- if eq $enablePrivateEndpoint "enable" }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpoint
 metadata:
@@ -42,9 +44,10 @@ spec:
   tags:
     {{- include "adp-aso-helm-library.commonTags" (list $ "") | indent 4 }} 
   owner:
-    armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}     
+    armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
+{{- end }}
 ---
-{{- if ne $environment "snd" }}
+{{- if eq $enablePrivateEndpoint "enable" }}
 apiVersion: network.azure.com/v1api20220701
 kind: PrivateEndpointsPrivateDnsZoneGroup
 metadata:
