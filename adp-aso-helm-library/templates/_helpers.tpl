@@ -78,16 +78,22 @@ roleDefinitionId for the roleAssignment
 {{- printf (include "builtInRole.azureServiceBusDataReceiverId" .) }}
 {{- else if eq $roleName "keyvaultsecretuser" }}
 {{- printf (include "builtInRole.keyVaultSecretsUserId" .) }}
-{{- else if eq $roleName "tabledatacontributor" }}
-{{- printf (include "builtInRole.storageTableDataContributorId" .) }}
-{{- else if eq $roleName "blobdatacontributor" }}
-{{- printf (include "builtInRole.storageBlobDataContributorId" .) }}
-{{- else if eq $roleName "tabledatareader" }}
-{{- printf (include "builtInRole.storageTableDataReaderId" .) }}
-{{- else if eq $roleName "blobdatareader" }}
-{{- printf (include "builtInRole.storageBlobDataReaderId" .) }}
 {{- else }}
 {{- fail (printf "Value for roleName is not as expected. '%s' role is not in the allowed roles." $roleName) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Storage Account roleDefinitionId for the roleAssignment
+*/}}
+{{- define "roleAssignment.saRoleDefinitionId" -}}
+{{- $roleName := .roleName | lower }}
+{{- if eq $roleName "datawriter" }}
+{{- printf (include "customRole.storageDataWriterId" (dict "tenant" .tenant "environment" .environment)) }}
+{{- else if eq $roleName "datareader" }}
+{{- printf (include "customRole.storageDataReaderId" (dict "tenant" .tenant "environment" .environment)) }}
+{{- else }}
+{{- fail (printf "The provided role name for the storage account, '%s', is not valid. It does not match any of the allowed roles." $roleName) }}
 {{- end }}
 {{- end }}
 
@@ -116,15 +122,7 @@ Scope for the Storage account roleAssignment
 {{- define "storage.roleAssignment.scope" -}}
 {{- $ := index . 0 }}
 {{- $storageAccountName := index . 1 }}
-{{- $resourceName := index . 2 }}
-{{- $resourceType := index . 3 }}
-{{- if eq $resourceType "storageContainer" }}
-{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName $resourceName }}
-{{- else if eq $resourceType "storageTable" }}
-{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.Storage/storageAccounts/%s/tableServices/default/tables/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName $resourceName }}
-{{- else }}
-{{- fail (printf "Value for resourceType is not as expected. '%s' is not in the allowed scope." $resourceType) }}
-{{- end }}
+{{- printf "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.Storage/storageAccounts/%s" $.Values.subscriptionId $.Values.teamResourceGroupName $storageAccountName }}
 {{- end }}
 
 {{/*

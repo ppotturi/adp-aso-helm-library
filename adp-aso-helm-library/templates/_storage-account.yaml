@@ -3,6 +3,7 @@
 {{- $teamRGName := required (printf $requiredMsg "teamResourceGroupName") .Values.teamResourceGroupName }}
 {{- $subscriptionId := required (printf $requiredMsg "subscriptionId") .Values.subscriptionId }}
 {{- $environment := required (printf $requiredMsg "environment") $.Values.environment | lower }}
+{{- $tenant := required (printf $requiredMsg "tenant") $.Values.tenant | lower }}
 {{- $storageAccountObject := required (printf $requiredMsg "storageAccounts") .Values.storageAccounts }}
 {{- range $storageAccount := .Values.storageAccounts }}
 {{- $storageAccountName :=  required (printf $requiredMsg "storageAccount[].name") $storageAccount.name }}
@@ -71,27 +72,32 @@ spec:
   owner:
     armId: {{ printf "/subscriptions/%s/resourceGroups/%s" $subscriptionId $teamRGName }}
 ---
+{{- if eq $enablePrivateEndpoint "enable" }}
 {{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccountFullName "blob") }}
----
 {{- include "adp-aso-helm-library.storage-account-private-endpoint" (list $ $storageAccount $storageAccountFullName "table") }}
 {{- end }}
----
+
+{{- if $storageAccount.roleAssignments }} 
+{{- include "adp-aso-helm-library.storage-account-role-assignment" (list $ $storageAccount.roleAssignments $storageAccountFullName $environment $tenant) }}   
+{{- end }}
+
+{{- end }} 
+
 {{- include "adp-aso-helm-library.storage-account-blob-service" (list $ .) }}
----
+
 {{- if $storageAccount.blobContainers }}
----  
 {{- include "adp-aso-helm-library.storage-account-blob-services-container" (list $ .) }}
 {{- end }}
+
 {{- if $storageAccount.tables }}
----  
 {{- include "adp-aso-helm-library.storage-account-table-services-table" (list $ .) }}
 {{- end }}
----
+
 {{- include "adp-aso-helm-library.storage-account-file-service" (list $ .) }}
----
+
 {{- if $storageAccount.fileShares }}
----  
 {{- include "adp-aso-helm-library.storage-account-file-services-share" (list $ .) }}
 {{- end }}
+
 {{- end }}
 {{- end }}
